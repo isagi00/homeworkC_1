@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stddef.h>
+
+#include "supporto.h"
 
 int main(int argc, char *argv[]){
     //opzioni : 
@@ -51,7 +54,7 @@ int main(int argc, char *argv[]){
             }
         }
 
-        
+    
         if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0){
             if (opzione_verbose == false) {
                 opzione_verbose = true;
@@ -63,10 +66,15 @@ int main(int argc, char *argv[]){
         }
     }
 
+    //qui vanno le funzioni. 
+    //controllo variabili
     
+    //test funzionalità lista
+    crea_lista();
 
 
-    
+
+
     
 
 }

@@ -19,7 +19,7 @@ Il programma prevede tre parametri di input
 3. -v, --verbose (notazione doppio trattino) per visualizzare sullo stdout le statistiche di elaborazione
 
 Esempi di esecuzione
-- myPreCompiler -i nome_file_input.c -o nome_file_output
+- myPreCompiler -i nome_file_input.c \
     memorizza nel file nome_file_output  le statistiche prodotte.
 - myPreCompiler -vi nome_file_input.c
     invia su stdout le statistiche di elaborazione
