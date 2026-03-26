@@ -3,13 +3,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "ControlloVariabile.h"
 #include "supporto.h"
 
 int main(int argc, char *argv[]){
     //opzioni : 
-    //1. -i oppure --in
-    //2. -o oppure --out
-    //3. -v oppure --verbose
+    //1. -i, --in
+    //2. -o, --out
+    //3. -v, --verbose
     char nome_file_input[256];
     char nome_file_output[256];
     bool opzione_input = false;
@@ -68,15 +69,27 @@ int main(int argc, char *argv[]){
 
     //qui vanno le funzioni. 
     //controllo variabili
-    
+    controlloVariabile(nome_file_input, opzione_output, opzione_input);
+    printf("[main] numero variabili controllate: %i\n", variabili_controllate);
+    printf("[main] errori rilevati: %i\n", errori_rilevati);
+
+
+
+
+
+
+
+
+
+
     //test funzionalità lista
-    List* list = list_create();
+    //List* list = list_create();
 
-    list_append(list, "palle");
+    //list_append(list, "palle");
 
-    printf("%s", (char*)list_get(list, 0));
+    //printf("%s", (char*)list_get(list, 0));
 
-    list_free(list);
+    //list_free(list);
     
 
 }
