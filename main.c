@@ -70,11 +70,13 @@ int main(int argc, char *argv[]){
     //controllo variabili
     
     //test funzionalità lista
-    crea_lista();
+    List* list = list_create();
 
+    list_append(list, "palle");
 
+    printf("%s", (char*)list_get(list, 0));
 
-
+    list_free(list);
     
 
 }

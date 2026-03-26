@@ -23,7 +23,10 @@ typedef struct{
 	//nota: size_t è un tipo senza segno
 }List;
 
-List* crea_lista(void); //nessun parametro necessario
+List* list_create(void); //nessun parametro necessario
+void list_append(List* lista, void* el);
+void* list_get(List* list, size_t indice);
+void list_free(List* list);
 
 
 #endif
