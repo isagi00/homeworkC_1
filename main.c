@@ -1,0 +1,74 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+
+int main(int argc, char *argv[]){
+    //opzioni : 
+    //1. -i oppure --in
+    //2. -o oppure --out
+    //3. -v oppure --verbose
+    char nome_file_input[256];
+    char nome_file_output[256];
+    bool opzione_input = false;
+    bool opzione_output = false;
+    bool opzione_verbose = false;
+
+
+    //controllo argomenti minimi
+    if (argc < 3 || argc > 6) {    //1: main, 2: -i, 3:nomefile.c ...
+         printf("[main] utilizzo: -i <file_in.c> [-o <file_out>] [-v] \n ");
+         printf("opzioni:\n");
+         printf("   -i, --in <file.c>  specifica il nome del file .c (obbligatorio)\n");
+         printf("   -o, --out <file>  specifica il nome del file su cui salvare le statistiche. stampa su terminale di default. (opzionale)\n");
+         printf("   -v, --verbose  stampa sul terminale le statistiche.\n ");
+         return 0;
+        }
+    
+    //controllo opzioni
+    for (int i = 1; i < argc; i++) {
+
+        if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--in") == 0){
+            if (opzione_input == false && i + 1 < argc){
+                strcpy(nome_file_input, argv[i + 1]);
+                opzione_input = true;
+                i++;
+            }
+            else{
+                printf("[main] utilizzo: -i <file_in.c> [-o <file_out>] [-v] \n ");
+                return 0;
+            }
+        }
+
+        if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--out") == 0){
+            if (opzione_output == false && i + 1 < argc) {
+                strcpy(nome_file_output, argv[i + 1]);
+                opzione_output = true;
+                i++;
+            }
+            else{
+                printf("[main] utilizzo: -i <file_in.c> [-o <file_out>] [-v] \n ");
+                return 0;
+            }
+        }
+
+        
+        if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0){
+            if (opzione_verbose == false) {
+                opzione_verbose = true;
+            }
+            else{
+                printf("[main] utilizzo: -i <file_in.c> [-o <file_out>] [-v] \n ");
+                return 0;
+            }
+        }
+    }
+
+    
+
+
+    
+    
+
+}
+
+
