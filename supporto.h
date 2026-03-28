@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdbool.h>
 
 
 //include guard
@@ -8,7 +9,10 @@
 
 //funzioni di supporto
 char** split(char* separaS,char* separatore, int *numeroP);
-
+char *rimuoviSpaziSx(char *str);
+bool controllaRigaCommento(char *str);
+bool controllaRigaInclude(char *str);
+bool controllaRigaVuota(char *str);
 
 
 

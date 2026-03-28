@@ -18,6 +18,7 @@ extern int tipi_dato_scorretti;
 
 char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);
 
+void controllaVarInutilizzate(char *nome_file_in);
 
 
 void salva_statistiche_file_esterno(char *nome_file_output);

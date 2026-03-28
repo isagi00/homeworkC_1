@@ -71,6 +71,7 @@ int main(int argc, char *argv[]){
     //controllo variabili
     controlloVariabile(nome_file_input, opzione_output, opzione_input);
 
+    controllaVarInutilizzate(nome_file_input);
 
 
     //salva le statistiche su un file esterno o stampa su terminale

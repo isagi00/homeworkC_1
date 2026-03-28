@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-char** split(char* separaS,char* separatore, int *numeroP){
+//funzione splitta str in un array di token.
+//str: stringa in input
+//separatore: caratteri su cui splittare
+//numeroP: numero di token all'interno dell'array.
+char** split(char* str,char* separatore, int *numeroP){
 	char **vettore = malloc(64*sizeof(char*));
-	char *token=strtok(separaS,separatore);
+	char *token=strtok(str,separatore);
 	int i=0;
 	while(token!=NULL){
 		vettore[i]=token;
@@ -15,13 +20,73 @@ char** split(char* separaS,char* separatore, int *numeroP){
 	return vettore;
 }
 
+//funzione ha come argomento un array di caratteri.
+//restituisce il puntatore alla prima posizione non spazio.
+//*str: stringa in input
+char *rimuoviSpaziSx(char *str){
+	//*str = puntatore
+	while(*str == ' ' || *str == '\t'){
+		str++;
+	}
+	return str;
+}
+
+//controlla se la riga attuale è un commento.
+//restituisce true se è commento.
+//*str: stringa in input
+bool controllaRigaCommento(char *str){
+	char *rigapulita = rimuoviSpaziSx(str);
+	
+	if (rigapulita[0] == '/' && rigapulita[1] == '/'){
+		return true;
+	}
+	return false;
+}
+
+//controlla se la riga attuale è un #include valido o non.
+//restituisce true se è valido.
+//*str: stringa in input
+bool controllaRigaInclude(char *str){
+	char *riga_pulita = rimuoviSpaziSx(str);
+	char copia[256];
+	strncpy(copia, riga_pulita, sizeof(copia));
+
+	char *token = strtok(copia, " \t");	//inserisce \0 su spazio e \t
+
+	if (token == NULL) return false;
+
+	//caso #include <?>
+	if (strcmp(token, "#include") == 0) return true;
+
+	//caso # 			include <?>
+	if (strcmp(token, "#") == 0){
+		token = strtok(NULL, " \t");	//NULL: continua dalla stringa precedente, quindi '#'
+		if (token != NULL && strcmp(token, "include") == 0) return true;
+	}
+	return false;
+}
+
+//controlla se la riga attuale è una riga vuota (con solo \n).
+//restituisce true se è vuoto.
+//*str: stringa in input
+bool controllaRigaVuota(char *str){
+	char *riga_pulita = rimuoviSpaziSx(str);	//rimuove spazi davanti
+	riga_pulita[strcspn(riga_pulita, "\n")] = '\0';	//sostituisce \n con \0 (per sicurezza)
+
+	if (riga_pulita[0] == '\0'){
+		return true;
+	}
+	return false;
+}
+
+
+
 
 
 
 
 
 //strutture dati
-
 //lista
 typedef struct{
 	void **puntatore;	//puntatore all'array di puntatori che puntano a oggetti di vario tipo
@@ -115,4 +180,12 @@ void list_free(List* list){
 	return;
 }
 
+
+//variabile
+
+typedef struct {
+	char* nome; 	//nome della variabile
+	int riga_dichiarata; 	//riga in cui è stata dichiarata la variabile
+	bool usata; 	//flag, true se la variabile è stata usata	
+} Variabile;
 

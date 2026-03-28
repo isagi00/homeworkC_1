@@ -34,7 +34,8 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 		riga[strcspn(riga, "\n")] = '\0';	//rimuove \n della riga e rimpiazza con \0
 
 		//split della riga in parole
-		char **parole = split(riga, &numero_parole_riga_corrente);
+
+		char **parole = split(riga," \t", &numero_parole_riga_corrente);
 
 		//debug
 		printf("[DEBUG] riga %d\n", numeroRiga);
@@ -89,6 +90,55 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 	printf("[ControlloVariabile] termine controllo variabili\n");
 	return NULL;
 }
+
+
+
+void controllaVarInutilizzate(char *nome_file_in){
+	List* variabili = list_create();	//lista per tenere traccia le variabili
+
+	FILE* file = fopen(nome_file_in, "r");
+	if (file == NULL) {
+		printf("[ControlloVariabile] controlla_var_inutilizzate: errore di apertura file\n");
+		return;
+	}
+
+	char riga[512]; //buffer per leggere una riga alla volta
+	int riga_attuale = 0;
+
+	//ciclo principale che scorre le righe del file
+	//nota: fgets(char *str, int n, FILE *stream):
+	//	*str: buffer dove viene salvata la stringa letta
+	//	n: numero massimo di caratteri da leggere
+	//	*stream: sorgente da cui leggere
+	//
+	//si ferma sempre al \n, che viene incluso.
+	//aggiunge il terminatore \0 alla fine della riga
+	//restituisce str in caso di successo, NULL in caso di errore o fine file.
+	while (fgets(riga, sizeof(riga), file) != NULL) {	
+		
+		//pulizia riga
+		riga[strcspn(riga, "\n")] = '\0';	//rimuove \n
+		char *riga_pulita = rimuoviSpaziSx(riga);
+
+		//se la riga corrente è commento o #include o vuota, salta.
+		if (controllaRigaCommento(riga_pulita) == true || controllaRigaInclude(riga_pulita) == true || controllaRigaVuota(riga_pulita) == true){
+				continue;
+		}
+		
+		
+	} 
+	fclose(file);
+
+
+
+
+
+}
+
+
+
+
+
 
 
 
