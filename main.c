@@ -69,7 +69,7 @@ int main(int argc, char *argv[]){
 
     //qui vanno le funzioni. 
     //controllo variabili
-    controlloVariabile(nome_file_input, opzione_output, opzione_input);
+    //controlloVariabile(nome_file_input, opzione_output, opzione_input);
 
     controllaVarInutilizzate(nome_file_input);
 

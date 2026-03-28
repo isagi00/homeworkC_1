@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 //funzione splitta str in un array di token.
 //str: stringa in input
@@ -80,6 +81,20 @@ bool controllaRigaVuota(char *str){
 }
 
 
+char *pulisciNomeVariabile(char *token){
+	//x=0;
+	char *copia = strdup(token);
+
+	for (int i=0; copia[i] != '\0'; i++){
+		if (!isalnum(copia[i]) && copia[i] != '_'){
+			copia[i] = '\0';
+			break;
+		}
+	}
+	return copia;
+}
+
+
 
 
 
@@ -118,7 +133,7 @@ List* list_create(){
 		return NULL;
 	}
 
-	printf("[supporto] lista creata correttamente\n");
+	//printf("[supporto] lista creata correttamente\n");
 	return nuova_lista;
 }
 
@@ -134,7 +149,7 @@ void list_append(List* lista, void* el){
 	if (lista->numero_elementi_attuali < lista->spazio_totale_allocato){
 		lista->puntatore[lista->numero_elementi_attuali] = el;
 		lista->numero_elementi_attuali += 1;
-		printf("[supporto] list_append: elemento aggiunto correttamente \n");
+		//printf("[supporto] list_append: elemento aggiunto correttamente \n");
 	}
 	else{
 		printf("[supporto] list_append: lista piena\n");
@@ -176,7 +191,7 @@ void list_free(List* list){
 	//free struct stessa
 	free(list);
 
-	printf("[supporto] list_free: lista liberata correttamente\n");
+	//printf("[supporto] list_free: lista liberata correttamente\n");
 	return;
 }
 
