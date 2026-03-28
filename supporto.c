@@ -17,6 +17,9 @@ char** split(char* separaS, int *numeroP){
 
 
 
+
+
+
 //strutture dati
 
 //lista

@@ -19,5 +19,10 @@ extern int tipi_dato_scorretti;
 char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);
 
 
+
+void salva_statistiche_file_esterno(char *nome_file_output);
+void stampa_statistiche_su_terminale(void);
+
+
 //fine include guard
 #endif

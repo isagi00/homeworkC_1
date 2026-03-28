@@ -70,27 +70,24 @@ int main(int argc, char *argv[]){
     //qui vanno le funzioni. 
     //controllo variabili
     controlloVariabile(nome_file_input, opzione_output, opzione_input);
-    printf("[main] numero variabili controllate: %i\n", variabili_controllate);
-    printf("[main] errori rilevati: %i\n", errori_rilevati);
 
 
 
+    //salva le statistiche su un file esterno o stampa su terminale
+    if (opzione_output == true && opzione_verbose == true){
+        salva_statistiche_file_esterno(nome_file_output);
+        stampa_statistiche_su_terminale();
+        return 0;
+    }
+    else if (opzione_output == true && opzione_verbose == false){
+        salva_statistiche_file_esterno(nome_file_input);
+        return 0;
+    }
+    else if (opzione_output == false){   //senza -o, --out: stampa su terminale di default
+        stampa_statistiche_su_terminale();
+        return 0;
+    }
 
-
-
-
-
-
-
-    //test funzionalità lista
-    //List* list = list_create();
-
-    //list_append(list, "palle");
-
-    //printf("%s", (char*)list_get(list, 0));
-
-    //list_free(list);
-    
 
 }
 

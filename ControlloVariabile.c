@@ -29,9 +29,9 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 	int numeroRiga=1;	//numero riga attuale
 
 	//legge file riga per riga
-	while(fgets(riga, sizeof(riga), file) != NULL){	//affinche una riga non è vuota
+	while(fgets(riga, sizeof(riga), file) != NULL){	//affinche una riga non è vuota nota: fgets() include il \n della riga
 
-		riga[strcspn(riga, "\n")] = '\0';
+		riga[strcspn(riga, "\n")] = '\0';	//rimuove \n della riga e rimpiazza con \0
 
 		//split della riga in parole
 		char **parole = split(riga, &numero_parole_riga_corrente);
@@ -88,6 +88,37 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 	fclose(file);
 	printf("[ControlloVariabile] termine controllo variabili\n");
 	return NULL;
+}
+
+
+
+//salva statistiche su file esterno
+void salva_statistiche_file_esterno(char *nome_file_output){
+	FILE *file_pointer = fopen(nome_file_output, "w"); //puntatore a file esterno
+
+	if (file_pointer == NULL) {
+		printf("[ControlloVariabile] salva_statistiche_file_esterno : Errore apertura file output\n");
+		return;
+	}
+	//scrittura su file output
+	fprintf(file_pointer, "[STAT] numero di variabili controllate: %i\n", variabili_controllate);
+	fprintf(file_pointer, "[STAT] numero di errori rilevati: %i\n", errori_rilevati);
+	fprintf(file_pointer, "[STAT] numero di nomi delle variabili non corretti: %i\n", nomi_variabili_non_corretti);
+	fprintf(file_pointer, "[STAT] numero di tipi di dato scorretti:  %i\n", tipi_dato_scorretti);
+
+	fclose(file_pointer);
+	printf("[ControlloVariabile] salva_statistiche_file_esterno: statistiche salvate in '%s'\n", nome_file_output);
+	return;
+}
+
+
+//stampa statistiche su terminale
+void stampa_statistiche_su_terminale(void){
+	printf("numero di variabili controllate: %i\n", variabili_controllate);
+	printf("numero di errori rilevati: %i\n", errori_rilevati);
+	printf("numero di nomi delle variabili non corretti: %i\n", nomi_variabili_non_corretti);
+	printf("numero di tipi di dato scorretti: %i:\n", tipi_dato_scorretti);
+	return;
 }
 
 

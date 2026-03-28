@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-
-int main(){
-	int j=0;
-	iny p;
-	char=a
-	char= "a"
-return 0;
-}
-
-int main();
+numero di variabili controllate: 2
+numero di errori rilevati: 6
+numero di nomi delle variabili non corretti: 0
+numero di tipi di dato scorretti:  0
