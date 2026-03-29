@@ -21,6 +21,7 @@ bool isMain(char* parola){
 }
 
 
+
 char* controlloVariabile(char* tipo){
         if(strcmp(tipo,"char")==0){
                 return "tipo char";
@@ -104,14 +105,45 @@ char* cont(char* filename){
 							printf("è main");
 							if(!esisteMain){
 								esisteMain=true;
-								printf("è main");
+								//printf("è main");
 							}
 							else{
 								printf("errore doppia main");
 							}
 						}
 						else{
-							printf("è variabile");
+						//	printf("è variabile");
+	                                                bool es1=false;
+                                                        bool es2=false;
+
+							for(int numpar=0;numpar<strlen(parole_split_s[j]);numpar++){
+
+								if(numpar==0){
+									if(!(((int)parole_split_s[j][numpar]>=65 && (int)parole_split_s[j][numpar]<=90) || ((int)parole_split_s[j][numpar]>=97 && (int)parole_split_s[j][numpar]<=122) || parole_split_s[j][numpar]=='_')){
+										printf("nome errore");
+										printf("%c%i\n",parole_split_s[j][numpar],(int)parole_split_s[j][numpar]);
+										break;
+									}
+								}else
+								if(parole_split_s[j][numpar]=='='){
+									break;
+								}else
+								if((int)parole_split_s[j][numpar]=='('){
+									es1=true;
+                                                                }else
+								if((int)parole_split_s[j][numpar]==')'){
+									es2=true;
+								}else
+								if(!(((int)parole_split_s[j][numpar]>=65 && (int)parole_split_s[j][numpar]<=90) ||((int)parole_split_s[j][numpar]>=97 && (int)parole_split_s[j][numpar]<=122) || parole_split_s[j][numpar]=='_') || ((int)parole_split_s[j][numpar]>=48 && (int)parole_split_s[j][numpar]<=57)){
+									printf("nome errore");
+                                                                        printf("%c%i\n",parole_split_s[j][numpar],(int)parole_split_s[j][numpar]);
+                                                                    	break;
+								}
+								if(es1 && es2){
+									printf("funzione");
+								}
+
+							}
 						}
 					}
 				}
