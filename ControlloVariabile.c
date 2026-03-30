@@ -13,6 +13,32 @@ int tipi_dato_scorretti = 0;
 
 const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
 
+bool isMain(char* parola){ // controlla se è funzione main
+	int numeroParola=strlen(parola);
+	if(strncmp(parola,"main(",5)==0 && parola[numeroParola-1]=='{'){
+		return true;
+	}
+	return false;
+}
+
+bool controlloTipo(char* parola){
+	if(strcmp(parola,"char")==0){
+		return true;
+	}else
+        if(strcmp(parola,"int")==0){
+                return true;
+        }else
+        if(strcmp(parola,"float")==0){
+                return true;
+        }else
+        if(strcmp(parola,"boole")==0){
+                return true;
+        }
+
+	tipi_dato_scorretti++;
+
+        return false;
+}
 
 
 //controlla il tipo delle variabili
@@ -27,9 +53,14 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 
 
 	char riga[128];	//numero massimo di parole in una riga, buffer per una riga
-	int numero_parole_riga_corrente;	//numero parole della riga corrente
-	int numeroRiga=1;	//numero riga attuale
+//	int numero_parole_riga_corrente;	//numero parole della riga corrente
+//	int numeroRiga=1;	//numero riga attuale
 
+	int numero_pv;//punto virgola
+	int numero_s;//spazzio
+	int numeroRiga=0;
+
+	bool esisteMain=false;
 	//legge file riga per riga
 	while(fgets(riga, sizeof(riga), file) != NULL){	//affinche una riga non è vuota nota: fgets() include il \n della riga
 
@@ -37,6 +68,112 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 
 		//split della riga in parole
 
+		int contaSpazzi=0;
+                while(riga[contaSpazzi]==' '||riga[contaSpazzi]=='\t'){
+                        contaSpazzi++;
+                }
+                char rigaPul[strlen(riga)-contaSpazzi+1];// riga pulita lunghezza della riga - numero di spazzi + 1 posto per \0
+                strncpy(rigaPul, riga + contaSpazzi, strlen(riga) - contaSpazzi + 1);
+
+//_____divisione per punto virgola_____ ("int i;char c;")==>[[int i],[char c]]
+                char **parole_split_pv = split(rigaPul,";",&numero_pv);
+		//salta riga vuota
+		if(numero_pv==0){
+                //      printf("riga vuota\n");
+                        free(parole_split_pv);
+                        numeroRiga++;
+                        continue;
+                }
+		
+
+
+//manca controllo di # e //
+
+
+
+
+
+
+	//_____divisione per spazi_____[[int i],[char c]]==>[[[int],[i]],[[char],[c]]]
+
+		for(int i=0;i<numero_pv;i++){
+                //      printf("%s\n",parole_split_pv[i]);
+
+                        char *cp=parole_split_pv[i];//puntatore cp punta parole corrente se i=0 cp-->[int i]
+                        char **parole_split_s=split(cp," ",&numero_s);
+			bool tipoCorretto;
+	                for(int j=0;j<numero_s;j++){
+				if(j==0){
+					tipoCorretto=controlloTipo(parole_split_s[j]);
+                                        if(!tipoCorretto){
+   	                                     printf("[TYPEERRORE] riga:%i\n",numeroRiga);
+					}
+                                }
+                                if(j==1){
+                                        if(tipoCorretto){
+                                                if(isMain(parole_split_s[j])){
+                                                      //  printf("è main");
+                                                        if(!esisteMain){
+                                                                esisteMain=true;
+                                                                //printf("è main");
+                                                        }
+                                                        else{
+								errori_rilevati++;
+                                                                printf("errore doppia main\n");
+                                                        }
+                                                }
+                                                else
+						{
+                                                //      printf("è variabile");
+                                                        bool es1=false; // se esiste "(" es1 es2 per controlare una funzione
+                                                        bool es2=false; // se esiste ")"
+
+                                                        for(int numpar=0;numpar<strlen(parole_split_s[j]);numpar++){
+
+                                                                if(numpar==0){
+                                                                        if(!(((int)parole_split_s[j][numpar]>=65 && (int)parole_split_s[j][numpar]<=90) || ((int)parole_split_s[j][numpar]>=97 && (int)parole_split_s[j][numpar]<=122) || parole_split_s[j][numpar]=='_')){
+										nomi_variabili_non_corretti++;
+                                                                              //  printf("nome errore");
+                                                                              //  printf("%c%i\n",parole_split_s[j][numpar],(int)parole_split_s[j][numpar]);
+                                                                                break;
+                                                                        }
+                                                                }else
+                                                                if(parole_split_s[j][numpar]=='='){
+                                                                        break;
+                                                                }else
+                                                                if((int)parole_split_s[j][numpar]=='('){
+                                                                        es1=true;
+                                                                }else
+                                                                if((int)parole_split_s[j][numpar]==')' && es1){
+                                                                        es2=true;
+                                                                }else
+                                                                if(!(((int)parole_split_s[j][numpar]>=65 && (int)parole_split_s[j][numpar]<=90) ||((int)parole_split_s[j][numpar]>=97 && (int)parole_split_s[j][numpar]<=122) || parole_split_s[j][numpar]=='_') || ((int)parole_split_s[j][numpar]>=48 && (int)parole_split_s[j][numpar]<=57)){
+                                                                        printf("nome errore");
+                                                                        printf("%c%i\n",parole_split_s[j][numpar],(int)parole_split_s[j][numpar]);
+                                                                        break;
+                                                                }
+                                                                if(es1 && es2){
+                                                                        printf("funzione");
+									break;
+                                                                }
+
+                                                        }
+                                                }
+                                        }else
+					{
+						printf("[tipo er]");
+					}
+                                }
+                        }
+                        free(parole_split_s);
+		}
+	numeroRiga++;
+	free(parole_split_pv);
+	}
+	
+
+
+/*
 		char **parole = split(riga," \t", &numero_parole_riga_corrente);
 
 		//debug
@@ -88,7 +225,7 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 		free(parole);	//libera spazio riservato dell'array parole   
 		}
 	
-	fclose(file);
+	fclose(file);*/
 	printf("[ControlloVariabile] termine controllo variabili\n");
 	return NULL;
 }
