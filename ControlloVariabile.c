@@ -5,6 +5,9 @@
 #include <ctype.h>
 #include "supporto.h"
 
+
+
+
 int variabili_controllate = 0;
 int errori_rilevati = 0;
 int variabili_inutilizzate = 0;
@@ -233,7 +236,7 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 
 //controlla variabili inutilizzate
 //TODO: la lista variabili viene popolata, ma adesso da controllare l'utilizzo di esse nel codice.
-void controllaVarInutilizzate(char *nome_file_in){
+void controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 	List* variabili = list_create();	//lista per tenere traccia le variabili
 
 	FILE* file = fopen(nome_file_in, "r");
@@ -261,11 +264,20 @@ void controllaVarInutilizzate(char *nome_file_in){
 		char *riga_pulita = rimuoviSpaziSx(riga);
 
 		//se la riga corrente è commento o #include o vuota, salta.
-		if (controllaRigaCommento(riga_pulita) == true || controllaRigaInclude(riga_pulita) == true || controllaRigaVuota(riga_pulita) == true){
-			printf("[controllaVarInutilizzata]: commento, include o vuoto rilevato alla riga %i\n", riga_attuale);
+		if(controllaRigaCommento(riga_pulita) == true){
+			printf("[controllaVarInutilizzata]: commento  alla riga %i\n", riga_attuale);
+			continue;
+		}
+		else if(controllaRigaInclude(riga_pulita) == true){
+			printf("[controllaVarInutilizzata]: include  alla riga %i\n", riga_attuale);
+			continue;
+		}
+		else if(controllaRigaVuota(riga_pulita) == true){
+			printf("[controllaVarInutilizzata]: riga %i vuota\n", riga_attuale);
 			continue;
 		}
 
+		//ottieni i token per la riga
 		int numero_token;
 		char** tokens = split(riga_pulita, " \t", &numero_token);
 
@@ -291,56 +303,63 @@ void controllaVarInutilizzate(char *nome_file_in){
 				}
 			}
 		}
-		//secondo passaggio 
-		rewind(file);
-
-		while (fgets(riga, sizeof(riga), file)) {
+	} 
 
 
+	//secondo passaggio 
+	rewind(file);
+	riga_attuale = 0;
 
+	while (fgets(riga, sizeof(riga), file)) {
+		riga_attuale++;
+		riga[strcspn(riga, "\n")] = '\0';
+		char *riga_pulita = rimuoviSpaziSx(riga);
+		//se la riga corrente è commento o #include o vuota, salta.
+		if (controllaRigaCommento(riga_pulita) == true || controllaRigaInclude(riga_pulita) == true || controllaRigaVuota(riga_pulita) == true){
+			continue;
 		}
 
+		int numero_token;
+		char **tokens = split(riga_pulita, " \t=;,()[]{}+-*/<>!&|", &numero_token);
 
-	} 
-	fclose(file);
-
-}
-
-
-
-
-
-
-
-
-//salva statistiche su file esterno
-void salva_statistiche_file_esterno(char *nome_file_output){
-	FILE *file_pointer = fopen(nome_file_output, "w"); //puntatore a file esterno
-
-	if (file_pointer == NULL) {
-		printf("[ControlloVariabile] salva_statistiche_file_esterno : Errore apertura file output\n");
-		return;
+			//per ogni riga scorre una volta le variabili della lista
+		for (int i = 0; i < variabili->numero_elementi_attuali; i++)
+		{
+			Variabile *var_att = list_get(variabili, i);
+			if (var_att->usata == true){
+				continue;
+			}
+			//scorre i token della riga attuale
+			for (int t = 0; t < numero_token; t++){
+				char *token_pulito = pulisciNomeVariabile(tokens[t]);
+				if (strcmp(token_pulito, var_att->nome) == 0 && riga_attuale != var_att->riga_dichiarata){
+					//se il token è uguale al nome della variabile e la riga attuale non è la riga in cui la var è stata dichiarata
+					var_att->usata = true;	//allora la var è stata utilizzata
+					printf("variabile %s utilizzata alla riga %i\n", var_att->nome, riga_attuale);
+				}
+				free(token_pulito);
+			}
+		}
+		free(tokens);
 	}
-	//scrittura su file output
-	fprintf(file_pointer, "[STAT] numero di variabili controllate: %i\n", variabili_controllate);
-	fprintf(file_pointer, "[STAT] numero di errori rilevati: %i\n", errori_rilevati);
-	fprintf(file_pointer, "[STAT] numero di nomi delle variabili non corretti: %i\n", nomi_variabili_non_corretti);
-	fprintf(file_pointer, "[STAT] numero di tipi di dato scorretti:  %i\n", tipi_dato_scorretti);
 
-	fclose(file_pointer);
-	printf("[ControlloVariabile] salva_statistiche_file_esterno: statistiche salvate in '%s'\n", nome_file_output);
+		//controllo finale delle variabili non utilizzate
+		for (int i = 0; i < variabili->numero_elementi_attuali; i++){
+			Variabile *var = list_get(variabili, i);
+			if (var->usata == false){
+				printf("[ControllaVarInutilizzate] variabile %s non usata\n", var->nome);
+				stats->variabili_inutilizzate++;
+			}
+		}
+	list_free(variabili);
+	fclose(file);
 	return;
+
 }
 
 
-//stampa statistiche su terminale
-void stampa_statistiche_su_terminale(void){
-	printf("numero di variabili controllate: %i\n", variabili_controllate);
-	printf("numero di errori rilevati: %i\n", errori_rilevati);
-	printf("numero di nomi delle variabili non corretti: %i\n", nomi_variabili_non_corretti);
-	printf("numero di tipi di dato scorretti: %i:\n", tipi_dato_scorretti);
-	return;
-}
+
+
 
 
 

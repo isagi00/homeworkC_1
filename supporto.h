@@ -39,6 +39,16 @@ typedef struct {
 } Variabile;
 
 
+typedef struct{
+	int variabili_controllate;
+	int errori_rilevati;
+	int variabili_inutilizzate;
+	int nomi_variabili_non_corretti;
+	int tipi_dato_scorretti;
+} Statistiche;
+
+void salva_statistiche_file_esterno(char *nome_file_output, Statistiche *stats);
+void stampa_statistiche_su_terminale(Statistiche *stats);
 
 #endif
 //fine include guard
