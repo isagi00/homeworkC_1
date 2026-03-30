@@ -38,6 +38,15 @@ char* controlloVariabile(char* tipo){
 
         return "ERRORE TYPE";
 }
+
+char *rimuoviSpaziSx(char *str){
+        //str = puntatore
+        while(*str == ' ' || *str == '\t'){
+                str++;
+        }
+        return str;
+}
+
 /*
 char* eliminaSpazziD(char* s){
 
@@ -51,6 +60,48 @@ char* eliminaSpazziD(char* s){
 	return nuovaS;
 }
 */
+
+bool controllaRigaCommento(char *str){
+        char *rigapulita = rimuoviSpaziSx(str);
+
+        if (rigapulita[0] == '/' && rigapulita[1] == '/'){
+                return true;
+        }
+        return false;
+}
+
+bool controllaRigaInclude(char *str){
+        char *riga_pulita = rimuoviSpaziSx(str);
+        char copia[256];
+        strncpy(copia, riga_pulita, sizeof(copia));
+
+        char *token = strtok(copia, " \t");     //inserisce \0 su spazio e \t
+
+        if (token == NULL) return false;
+
+        //caso #include <?>
+        if (strcmp(token, "#include") == 0) return true;
+
+        //caso #                        include <?>
+        if (strcmp(token, "#") == 0){
+                token = strtok(NULL, " \t");    //NULL: continua dalla stringa precedente, quindi '#'
+                if (token != NULL && strcmp(token, "include") == 0) return true;
+        }
+        return false;
+}
+
+
+bool controllaRigaVuota(char *str){
+        char *riga_pulita = rimuoviSpaziSx(str);        //>
+        riga_pulita[strcspn(riga_pulita, "\n")] = '\0'; //>
+
+        if (riga_pulita[0] == '\0'){
+                return true;
+        }
+        return false;
+}
+
+
 char* cont(char* filename){
 
 	FILE *file=fopen(filename,"r");
@@ -77,6 +128,10 @@ char* cont(char* filename){
                 }
                 char rigaPul[strlen(riga)-contaSpa+1];
                 strncpy(rigaPul, riga + contaSpa, strlen(riga) - contaSpa + 1);
+
+		//char *rigaPul = rimuoviSpaziSx(riga);
+		
+
 		char **parole_split_pv = split(rigaPul,";",&numero_pv);
 		if(numero_pv==0){
 		//	printf("riga vuota\n");
