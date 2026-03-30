@@ -74,6 +74,13 @@ int main(int argc, char *argv[]){
     controllaVarInutilizzate(nome_file_input);
 
 
+
+
+
+
+    
+
+
     //salva le statistiche su un file esterno o stampa su terminale
     if (opzione_output == true && opzione_verbose == true){
         salva_statistiche_file_esterno(nome_file_output);
