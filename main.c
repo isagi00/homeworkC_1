@@ -68,11 +68,14 @@ int main(int argc, char *argv[]){
     }
 
     //qui vanno le funzioni. 
+
+    Statistiche stats = {0};    //inizializza tutto a 0
+
     //controllo variabili
     //controlloVariabile(nome_file_input, opzione_output, opzione_input);
 
-    controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
-    //controllaVarInutilizzate(nome_file_input);
+    //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
+    controllaVarInutilizzate(nome_file_input, &stats);
 
 
 
@@ -84,16 +87,16 @@ int main(int argc, char *argv[]){
 
     //salva le statistiche su un file esterno o stampa su terminale
     if (opzione_output == true && opzione_verbose == true){
-        salva_statistiche_file_esterno(nome_file_output);
-        stampa_statistiche_su_terminale();
+        salva_statistiche_file_esterno(nome_file_output, &stats);
+        stampa_statistiche_su_terminale(&stats);
         return 0;
     }
     else if (opzione_output == true && opzione_verbose == false){
-        salva_statistiche_file_esterno(nome_file_input);
+        salva_statistiche_file_esterno(nome_file_output, &stats);
         return 0;
     }
     else if (opzione_output == false){   //senza -o, --out: stampa su terminale di default
-        stampa_statistiche_su_terminale();
+        stampa_statistiche_su_terminale(&stats);
         return 0;
     }
 

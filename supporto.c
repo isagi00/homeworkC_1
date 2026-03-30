@@ -204,3 +204,46 @@ typedef struct {
 	bool usata; 	//flag, true se la variabile è stata usata	
 } Variabile;
 
+
+//statistiche
+typedef struct{
+	int variabili_controllate;
+	int errori_rilevati;
+	int variabili_inutilizzate;
+	int nomi_variabili_non_corretti;
+	int tipi_dato_scorretti;
+} Statistiche;
+
+
+
+//salva statistiche su file esterno
+void salva_statistiche_file_esterno(char *nome_file_output, Statistiche *stats){
+	FILE *file_pointer = fopen(nome_file_output, "w"); //puntatore a file esterno
+
+	if (file_pointer == NULL) {
+		printf("[ControlloVariabile] salva_statistiche_file_esterno : Errore apertura file output\n");
+		return;
+	}
+	//scrittura su file output
+	fprintf(file_pointer, "[STAT] numero di variabili controllate: %i\n", stats->variabili_controllate);
+	fprintf(file_pointer, "[STAT] numero di errori rilevati: %i\n", stats->errori_rilevati);
+	fprintf(file_pointer, "[STAT] numero di variabilio non utilizzati: %i\n", stats->variabili_inutilizzate);
+	fprintf(file_pointer, "[STAT] numero di nomi delle variabili non corretti: %i\n", stats->nomi_variabili_non_corretti);
+	fprintf(file_pointer, "[STAT] numero di tipi di dato scorretti:  %i\n", stats->tipi_dato_scorretti);
+
+	fclose(file_pointer);
+	printf("[ControlloVariabile] salva_statistiche_file_esterno: statistiche salvate in '%s'\n", nome_file_output);
+	return;
+}
+
+
+//stampa statistiche su terminale
+void stampa_statistiche_su_terminale(Statistiche *stats){
+	printf("[STAT] numero di variabili controllate: %i\n", stats->variabili_controllate);
+	printf("[STAT] numero di errori rilevati: %i\n", stats->errori_rilevati);
+	printf("[STAT] numero di variabilio non utilizzati: %i\n", stats->variabili_inutilizzate);
+	printf("[STAT] numero di nomi delle variabili non corretti: %i\n", stats->nomi_variabili_non_corretti);
+	printf("[STAT] numero di tipi di dato scorretti: %i:\n", stats->tipi_dato_scorretti);
+	return;
+}
+
