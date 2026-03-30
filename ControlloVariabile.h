@@ -15,8 +15,11 @@ extern int variabili_inutilizzate;
 extern int nomi_variabili_non_corretti;
 extern int tipi_dato_scorretti;
 
-
+bool isMain(char* parola);
+bool controlloTipo(char* parola);
 char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);
+
+//char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);
 
 void controllaVarInutilizzate(char *nome_file_in);
 
