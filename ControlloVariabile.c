@@ -68,15 +68,16 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 
 		//split della riga in parole
 
-		int contaSpazzi=0;
-                while(riga[contaSpazzi]==' '||riga[contaSpazzi]=='\t'){
+		//int contaSpazzi=0;
+                /*while(riga[contaSpazzi]==' '||riga[contaSpazzi]=='\t'){
                         contaSpazzi++;
                 }
                 char rigaPul[strlen(riga)-contaSpazzi+1];// riga pulita lunghezza della riga - numero di spazzi + 1 posto per \0
-                strncpy(rigaPul, riga + contaSpazzi, strlen(riga) - contaSpazzi + 1);
+                strncpy(rigaPul, riga + contaSpazzi, strlen(riga) - contaSpazzi + 1);*/
 
 //_____divisione per punto virgola_____ ("int i;char c;")==>[[int i],[char c]]
-                char **parole_split_pv = split(rigaPul,";",&numero_pv);
+		char *rigaPul=rimuoviSpaziSx(riga);
+        char **parole_split_pv = split(rigaPul,";",&numero_pv);
 		//salta riga vuota
 		if(numero_pv==0){
                 //      printf("riga vuota\n");
@@ -89,7 +90,9 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 
 //manca controllo di # e //
 
-
+		if(controllaRigaCommento(parole_split_pv[0])||controllaRigaInclude(parole_split_pv[0])||(strcmp(parole_split_pv[0],"{")*strcmp(parole_split_pv[0],"}")==0)){
+			numeroRiga++;
+		}
 
 
 
