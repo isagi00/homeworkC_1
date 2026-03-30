@@ -21,12 +21,7 @@ char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verb
 
 //char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);
 
-void controllaVarInutilizzate(char *nome_file_in, Statistiche *stats);
-
-
-void salva_statistiche_file_esterno(char *nome_file_output, Statistiche *stats);
-void stampa_statistiche_su_terminale(Statistiche *stats);
-
+List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats);
 
 //fine include guard
 #endif
