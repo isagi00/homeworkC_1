@@ -23,9 +23,9 @@ char** split(char* str,char* separatore, int *numeroP){
 
 //funzione ha come argomento un array di caratteri.
 //restituisce il puntatore alla prima posizione non spazio.
-//*str: stringa in input
+//str: stringa in input
 char *rimuoviSpaziSx(char *str){
-	//*str = puntatore
+	//str = puntatore
 	while(*str == ' ' || *str == '\t'){
 		str++;
 	}
@@ -34,7 +34,7 @@ char *rimuoviSpaziSx(char *str){
 
 //controlla se la riga attuale è un commento.
 //restituisce true se è commento.
-//*str: stringa in input
+//str: stringa in input
 bool controllaRigaCommento(char *str){
 	char *rigapulita = rimuoviSpaziSx(str);
 	
@@ -46,7 +46,7 @@ bool controllaRigaCommento(char *str){
 
 //controlla se la riga attuale è un #include valido o non.
 //restituisce true se è valido.
-//*str: stringa in input
+//str: stringa in input
 bool controllaRigaInclude(char *str){
 	char *riga_pulita = rimuoviSpaziSx(str);
 	char copia[256];
@@ -69,7 +69,7 @@ bool controllaRigaInclude(char *str){
 
 //controlla se la riga attuale è una riga vuota (con solo \n).
 //restituisce true se è vuoto.
-//*str: stringa in input
+//str: stringa in input
 bool controllaRigaVuota(char *str){
 	char *riga_pulita = rimuoviSpaziSx(str);	//rimuove spazi davanti
 	riga_pulita[strcspn(riga_pulita, "\n")] = '\0';	//sostituisce \n con \0 (per sicurezza)

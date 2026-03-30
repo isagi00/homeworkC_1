@@ -291,6 +291,16 @@ void controllaVarInutilizzate(char *nome_file_in){
 				}
 			}
 		}
+		//secondo passaggio 
+		rewind(file);
+
+		while (fgets(riga, sizeof(riga), file)) {
+
+
+
+		}
+
+
 	} 
 	fclose(file);
 
