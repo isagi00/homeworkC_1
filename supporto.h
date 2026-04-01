@@ -9,6 +9,8 @@
 
 //funzioni di supporto
 char** split(char* separaS,char* separatore, int *numeroP);
+char** split_variabile(char* str, int *numero);
+char* eliminaSpazziDxSx(char* str);
 char *rimuoviSpaziSx(char *str);
 bool controllaRigaCommento(char *str);
 bool controllaRigaInclude(char *str);

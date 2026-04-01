@@ -6,176 +6,436 @@
 #include "supporto.h"
 
 
-
-
-int variabili_controllate = 0;
-int errori_rilevati = 0;
-int variabili_inutilizzate = 0;
-int nomi_variabili_non_corretti = 0;
-int tipi_dato_scorretti = 0;
-
 const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
 
-bool isMain(char* parola){ // controlla se è funzione main
-	int numeroParola=strlen(parola);
-	if(strncmp(parola,"main(",5)==0 && parola[numeroParola-1]=='{'){
-		return true;
-	}
-	return false;
+void stampaParoleSplit(char **parole, int numero_parole) {
+    printf("Contenuto di parole_split_pv (numero_parole = %d):\n", numero_parole);
+    for (int i = 0; i < numero_parole; i++) {
+        printf("[%d]: '%s'\n", i, parole[i]);
+    }
+}
+
+bool isMain(char* riga) {
+    int numeroParola;
+    char** parola = split(riga, "()", &numeroParola);
+    
+    if(numeroParola < 1){
+        free(parola);
+        return false;
+    }
+
+    int p;
+    bool controlloPrimaParte = false;
+    char** primaParte = split(parola[0], " \t", &p);
+    if(p >= 2 && strcmp(primaParte[0], "int") == 0 && strcmp(primaParte[1], "main") == 0){
+        controlloPrimaParte = true;
+    }
+    free(primaParte);
+
+    if(numeroParola > 1 && strlen(parola[1]) > 0){
+        int p1;
+        bool controlloSecondaParte = false;
+        char** secondaParte = split(parola[1], " ,\t", &p1);
+        if(p1 >= 4 && strcmp(secondaParte[0], "int") == 0 && strcmp(secondaParte[1], "argc") == 0
+        && strcmp(secondaParte[2], "char") == 0 && strcmp(secondaParte[3], "*argv[]") == 0)
+        {
+            controlloSecondaParte = true;
+        }
+        free(secondaParte);
+
+        if(controlloPrimaParte && controlloSecondaParte){
+            free(parola);
+            return true;
+        }
+    } else {
+        if(controlloPrimaParte){
+            free(parola);
+            return true;
+        }
+    }
+    free(parola);
+    return false;
 }
 
 bool controlloTipo(char* parola){
 	if(strcmp(parola,"char")==0){
 		return true;
-	}else
-        if(strcmp(parola,"int")==0){
-                return true;
-        }else
-        if(strcmp(parola,"float")==0){
-                return true;
-        }else
-        if(strcmp(parola,"boole")==0){
-                return true;
-        }
-
-	tipi_dato_scorretti++;
-
-        return false;
+	}
+	else if(strcmp(parola,"int")==0 || strcmp(parola,"long")==0 || strcmp(parola,"short")==0){
+        return true;
+    }
+	else if(strcmp(parola,"float")==0 || strcmp(parola,"double")==0){
+        return true;
+    }else if(strcmp(parola,"bool")==0){
+        return true;
+    }
+	printf("[Errore tipo]");
+    return false;
 }
 
+bool isFunzione(char* parola){
+    char* parole_da_split = strdup(parola); 
+    
+    char* parole_splitate_tipo = strtok(parole_da_split, " ");
+    char* parole_splitate_nome = NULL;  
+    
+    if(parole_splitate_tipo != NULL){
+        parole_splitate_nome = strtok(NULL, "");
+    } else {
+        free(parole_da_split);
+        return false;
+    }
 
-//controlla il tipo delle variabili
-char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose){
-	FILE *file=fopen(filename,"r"); //puntatore al contenuto del file
+    if(!controlloTipo(parole_splitate_tipo)){
+        free(parole_da_split);
+        return false;
+    }
+    
+    if(parole_splitate_nome != NULL){
+        int i = strlen(parole_splitate_nome);
+        bool esiste_aperta = false; 
 
-	//controllo se file valido
-	if(file == NULL){
-		printf("[ControlloVariabile] errore apertura file\n");
-		return NULL;
+        for(int j = 0; j < i - 1; j++){
+            char c = parole_splitate_nome[j];
+            if(j == 0 && (c == '*' || (c == '*' && parole_splitate_nome[1] == '*'))){
+                continue;  
+            }
+            if(c == '('){
+                if(!esiste_aperta){
+                    esiste_aperta = true;
+                } else {
+                    free(parole_da_split);
+                    return false;  // doppia (
+                }
+            } else if(!(isalnum(c) || c == '_')){
+                if(!esiste_aperta){
+                    free(parole_da_split);
+                    return false;  
+                }
+            }
+        }
+        if(parole_splitate_nome[i - 1] != ')'){
+            free(parole_da_split);
+            return false;
+        }
+        free(parole_da_split);
+        return true;
+    }
+
+    free(parole_da_split);
+    return false;
+}
+
+bool controlloNome(char* parola){
+
+    int n = strlen(parola);
+    
+    for(int i = 0; i < n; i++){
+        if(i == 0){
+            if(!(isalpha(parola[i]) || parola[i] == '_')){
+                return false;
+            }
+        }
+        else if(!(isalnum(parola[i]) || parola[i] == '_')){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool controlloCorrettezzaVariabile(char* valore,char* tipo){
+	
+	if(strcmp(tipo,"char")==0){      
+        
+		if(strlen(valore)<=3 && strlen(valore)>=2 && valore[0]=='\'' && valore[strlen(valore)-1]=='\''){
+			return true;
+		}
+        return false;
+    }else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 
+
+        for(int i = 1; i <strlen(valore); i++){
+	
+            if(!(isalnum(valore[i]) ||valore[i]=='+'||valore[i]=='-'||valore[i])==' '|| valore[i]=='\t'){
+                return false;
+            }
+        }
+        return true;
+
+    }else if(strcmp(tipo,"float")==0 || strcmp(tipo,"double")==0){
+    	bool haPunto = false;
+    	bool haE = false;
+    	int len = strlen(valore);
+
+    	for(int i = 0; i < len; i++){
+        	if(valore[i] == '.'){
+            	if(haPunto || haE) return false;
+            	haPunto = true;
+        	}
+        	else if(valore[i] == 'e' || valore[i] == 'E'){
+            	if(haE) return false; 
+            	haE = true;
+        	}
+        	else if(valore[i] == '+' || valore[i] == '-'){
+            	if(i != 0){
+					return false; 
+				} 
+        	}	
+        	else if(valore[i] == ' ' || valore[i] == '\t'){
+            	continue; 
+        	}
+        	else if(!isdigit(valore[i])){
+            	return false;
+        	}
+    	}
+    free(valore);
+    return true;
+
+	}else if(strcmp(tipo,"bool")==0){     
+        if(strcmp(valore,"true")==0  || strcmp(valore,"false")==0 || strcmp(valore,"1")==0 || strcmp(valore,"0")==0){
+            return true;
+        }
+        return false;
+    }
+	
+}
+
+bool controllaDichiarazioneVariabile(char* parola){
+	int numero_parte;
+	char* parole_copia=strdup(parola);
+	//printf("\n %s \n",parole_copia);
+    char** parte_variabile=split_variabile(parole_copia,&numero_parte);
+	int pppp=0;
+	/*while (parte_variabile[pppp]!=NULL){
+		printf("%s\n",parte_variabile[pppp]);
+		pppp++;
+	}
+*/
+	
+	if(numero_parte<=1){
+		return false; //int 
+	}else if(numero_parte==2){ // int i
+		if(controlloTipo(parte_variabile[0])){
+			if(controlloNome(parte_variabile[1])){
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+		else{
+			return false;
+		}
+	}else if(numero_parte==3){
+		if(controlloTipo(parte_variabile[0]) && controlloNome(parte_variabile[1])){
+			if(controlloCorrettezzaVariabile(parte_variabile[2],parte_variabile[0])){
+				return true;
+			}else{
+	////mmmmmmmmmmmmmmmmm
+			}
+		}
+		else{
+			return false;
+		}
+	}else{
+		return false;
 	}
 
+    free(parte_variabile);
+    free(parole_copia);
+	return false;
+}
 
-	char riga[128];	//numero massimo di parole in una riga, buffer per una riga
-//	int numero_parole_riga_corrente;	//numero parole della riga corrente
-//	int numeroRiga=1;	//numero riga attuale
+//controlla il tipo delle variabili
+char* controlloVariabile(char* filename, Statistiche *stats){
+    FILE *file = fopen(filename, "r");
+    if(file == NULL){
+        printf("[ControlloVariabile] errore apertura file\n");
+        return NULL;
+    }
 
-	int numero_pv;//punto virgola
-	int numero_s;//spazzio
-	int numeroRiga=0;
+    char riga[128];
+    int numero_pv, numero_s;
+    int numeroRiga = 0;
+    bool esisteMain = false;
 
-	bool esisteMain=false;
-	//legge file riga per riga
-	while(fgets(riga, sizeof(riga), file) != NULL){	//affinche una riga non è vuota nota: fgets() include il \n della riga
+    while(fgets(riga, sizeof(riga), file) != NULL){
+        riga[strcspn(riga, "\n")] = '\0';
 
-		riga[strcspn(riga, "\n")] = '\0';	//rimuove \n della riga e rimpiazza con \0
+        char *rigaPul = rimuoviSpaziSx(riga);
+        char **parole_split_pv = split(rigaPul, "{};", &numero_pv);
+		//stampaParoleSplit(parole_split_pv,numero_pv);
+        if(numero_pv == 0){
+            free(parole_split_pv);
+            numeroRiga++;
+            continue;
+        }
 
-		//split della riga in parole
-
-		//int contaSpazzi=0;
-                /*while(riga[contaSpazzi]==' '||riga[contaSpazzi]=='\t'){
-                        contaSpazzi++;
-                }
-                char rigaPul[strlen(riga)-contaSpazzi+1];// riga pulita lunghezza della riga - numero di spazzi + 1 posto per \0
-                strncpy(rigaPul, riga + contaSpazzi, strlen(riga) - contaSpazzi + 1);*/
-
-//_____divisione per punto virgola_____ ("int i;char c;")==>[[int i],[char c]]
-		char *rigaPul=rimuoviSpaziSx(riga);
-        char **parole_split_pv = split(rigaPul,";",&numero_pv);
-		//salta riga vuota
-		if(numero_pv==0){
-                //      printf("riga vuota\n");
-                        free(parole_split_pv);
-                        numeroRiga++;
-                        continue;
-                }
+        if(controllaRigaCommento(parole_split_pv[0]) || controllaRigaInclude(parole_split_pv[0])  || strcmp(parole_split_pv[0], "{") == 0 || strcmp(parole_split_pv[0], "}") == 0){
+            numeroRiga++;
+            free(parole_split_pv);
+            continue;
+        }
 		
+        for(int i = 0; i < numero_pv; i++){
+            char *cp = parole_split_pv[i];
+			char *cp1 = strdup(rimuoviSpaziSx(cp));
+			char** cp2=NULL;
+			int numero_variabile;
+            //char **parole_split_s = split(cp, " ", &numero_s);
+
+			//printf("%s\n",cp);
+            if(isMain(cp)){
+				if(!esisteMain){
+					printf("Questa è main riga:%i\n",numeroRiga);
+               		esisteMain = true;
+					continue;
+				}
+				else{
+					stats->errori_rilevati++;
+					printf("[ERRORE MAIN]:doppia main riga %i\n",numeroRiga);
+                	continue;
+            	}
+			}else if(isFunzione(cp1)){
+				printf("è una funzione %d riga: %i\n",isFunzione(cp1),numeroRiga);
+			}else{
+				//printf("%s è una funzione %d riga: %i\n",cp1,isFunzione(cp1),numeroRiga);
+				if(controllaDichiarazioneVariabile(cp1)){
+					printf("(Dichiarazione Variabile) riga: %i\n",numeroRiga);
+				}
+				else{
+					printf("[Errore Variabile] %s riga: %i\n",cp1,numeroRiga);
+				}
+			}
+			
+			/*else{
+				
+			}
+            
+            
+
+            char* tipo_ = NULL;
+            bool haTipo = false;
+            bool valoreCor = false;
+			bool isFunzione = false;
+            RisultatoNome haNomeCorretto = {false, false};
+			
+			
+            for(int j = 0; j < numero_s; j++){
+                if(!haTipo){
+                    if(controlloTipo(parole_split_s[j])){
+                        haTipo = true;
+                        tipo_ = parole_split_s[j];
+                    } else {
+						haNomeCorretto=controlloNome(parole_split_s[j]);
+						int n_separa_uguale;
+						char** separa_uguale = split(parole_split_pv[i], "=", &n_separa_uguale);
+						if(haNomeCorretto.cor && n_separa_uguale==2){
+							int n_separa_uguale_spazzio;
+							char** separa_uguale_spazzio = split(separa_uguale[0], " ", &n_separa_uguale_spazzio);
+							if (n_separa_uguale_spazzio>1)
+							{
+								stats->tipi_dato_scorretti++;
+								stats->errori_rilevati;
+								printf("[ERRORE riga %d] tipo scorretto: %s\n", numeroRiga, parole_split_s[j]);
+							}
+							else
+							{
+								printf("[è una variabile\n]");
+								break;
+							}
+						}
+						else{
+ 							printf("errore forma");
+						}
+                    }
+                } else {
+                    haNomeCorretto = controlloNome(parole_split_s[j]);
+                    if(!haNomeCorretto.cor){                          
+                        stats->nomi_variabili_non_corretti++;
+						stats->errori_rilevati++;
+						haTipo=false;
+						printf("[ERRORE riga %d] nome scorretto: %s\n", numeroRiga, parole_split_s[j]);
+                    }
+                    if(haNomeCorretto.haugu){
+                        valoreCor = controllaVar(parole_split_s[j], tipo_); 
+                        if(!valoreCor){
+                            stats->errori_rilevati++;
+							printf("[ERRORE riga %d] valore scorretto: %s\n", numeroRiga, parole_split_s[j]);
+                        }
+<<<<<<< HEAD
+                    }
+                }
+            }*/
+
+            //free(parole_split_s);
+        }
+        numeroRiga++;
+        free(parole_split_pv);
+    }
 
 
-//manca controllo di # e //
 
-		if(controllaRigaCommento(parole_split_pv[0])||controllaRigaInclude(parole_split_pv[0])||(strcmp(parole_split_pv[0],"{")*strcmp(parole_split_pv[0],"}")==0)){
-			numeroRiga++;
+
+/*
+		char **parole = split(riga," \t", &numero_parole_riga_corrente);
+
+		//debug
+		printf("[DEBUG] riga %d\n", numeroRiga);
+		for (int i = 0; i < numero_parole_riga_corrente; i++){
+			printf("stringa:[%s] \n", parole[i]);  // stampa ogni stringa tra virgolette
 		}
 
+		
+		//controllo riga vuota
+		if (numero_parole_riga_corrente == 0) {
+            printf("[ControlloVariabile] riga %d vuota, skip\n", numeroRiga);
+            free(parole);
+            numeroRiga++;
+            continue;  // salta alla prossima riga
+        }
 
-
-
-	//_____divisione per spazi_____[[int i],[char c]]==>[[[int],[i]],[[char],[c]]]
-
-		for(int i=0;i<numero_pv;i++){
-                //      printf("%s\n",parole_split_pv[i]);
-
-                        char *cp=parole_split_pv[i];//puntatore cp punta parole corrente se i=0 cp-->[int i]
-                        char **parole_split_s=split(cp," ",&numero_s);
-			bool tipoCorretto;
-	                for(int j=0;j<numero_s;j++){
-				if(j==0){
-					tipoCorretto=controlloTipo(parole_split_s[j]);
-                                        if(!tipoCorretto){
-   	                                     printf("[TYPEERRORE] riga:%i\n",numeroRiga);
-					}
-                                }
-                                if(j==1){
-                                        if(tipoCorretto){
-                                                if(isMain(parole_split_s[j])){
-                                                      //  printf("è main");
-                                                        if(!esisteMain){
-                                                                esisteMain=true;
-                                                                //printf("è main");
-                                                        }
-                                                        else{
-								errori_rilevati++;
-                                                                printf("errore doppia main\n");
-                                                        }
-                                                }
-                                                else
-						{
-                                                //      printf("è variabile");
-                                                        bool es1=false; // se esiste "(" es1 es2 per controlare una funzione
-                                                        bool es2=false; // se esiste ")"
-
-                                                        for(int numpar=0;numpar<strlen(parole_split_s[j]);numpar++){
-
-                                                                if(numpar==0){
-                                                                        if(!(((int)parole_split_s[j][numpar]>=65 && (int)parole_split_s[j][numpar]<=90) || ((int)parole_split_s[j][numpar]>=97 && (int)parole_split_s[j][numpar]<=122) || parole_split_s[j][numpar]=='_')){
-										nomi_variabili_non_corretti++;
-                                                                              //  printf("nome errore");
-                                                                              //  printf("%c%i\n",parole_split_s[j][numpar],(int)parole_split_s[j][numpar]);
-                                                                                break;
-                                                                        }
-                                                                }else
-                                                                if(parole_split_s[j][numpar]=='='){
-                                                                        break;
-                                                                }else
-                                                                if((int)parole_split_s[j][numpar]=='('){
-                                                                        es1=true;
-                                                                }else
-                                                                if((int)parole_split_s[j][numpar]==')' && es1){
-                                                                        es2=true;
-                                                                }else
-                                                                if(!(((int)parole_split_s[j][numpar]>=65 && (int)parole_split_s[j][numpar]<=90) ||((int)parole_split_s[j][numpar]>=97 && (int)parole_split_s[j][numpar]<=122) || parole_split_s[j][numpar]=='_') || ((int)parole_split_s[j][numpar]>=48 && (int)parole_split_s[j][numpar]<=57)){
-                                                                        printf("nome errore");
-                                                                        printf("%c%i\n",parole_split_s[j][numpar],(int)parole_split_s[j][numpar]);
-                                                                        break;
-                                                                }
-                                                                if(es1 && es2){
-                                                                        printf("funzione");
-									break;
-                                                                }
-
-                                                        }
-                                                }
-                                        }else
-					{
-						printf("[tipo er]");
-					}
-                                }
-                        }
+		//controlla se è #include o //commento
+		if (parole[0][0] == '#' || (parole[0][0] == '/' && strlen(parole[0]) > 1 && parole[0][1] == '/')) {
+            printf("[ControlloVariabile] riga %d: commento/include, skip\n", numeroRiga);
+            free(parole);
+            numeroRiga++;
+            continue;  // salta alla prossima riga
+        }
+			
+		//controllo tipi variabile
+		if((strcmp(parole[0],"int") == 0 || strcmp(parole[0],"long") == 0 || strcmp(parole[0], "short") == 0 )){
+            printf("[ControlloVariabile] rilevato tipo intero alla riga %i\n", numeroRiga);
+			variabili_controllate += 1;
+		}
+		else if(strcmp(parole[0],"char")==0){
+			printf("[ControlloVariabile] rilevato tipo char alla riga %i\n", numeroRiga);
+			variabili_controllate += 1;
+		}
+        else if(strcmp(parole[0],"float")==0){
+            printf("[ControlloVariabile] rilevato tipo float alla riga %i\n", numeroRiga); 
+			variabili_controllate += 1;          
+		}
+		else if(strcmp(parole[0],"bool")==0){
+            printf("[ControlloVariabile] rilevato tipo bool alla riga %i\n", numeroRiga);         
+			variabili_controllate += 1;                      
+		}
+		else{
+			printf("[ControlloVariabile] rilevato errore di tipo alla riga %i\n", numeroRiga);
+			errori_rilevati += 1;
+		}
+		//pulizia fine riga
+        numeroRiga++; //passa riga successiva
+		free(parole);	//libera spazio riservato dell'array parole   
+		}
+	*/
+	fclose(file);
+=======
                         free(parole_split_s);
 		}
 	numeroRiga++;
 	free(parole_split_pv);
 	}
+>>>>>>> 565b50477bb99da18f862874961d8a09bca027f0
 	printf("[ControlloVariabile] termine controllo variabili\n");
 	return NULL;
 }
