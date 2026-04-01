@@ -21,6 +21,49 @@ char** split(char* str,char* separatore, int *numeroP){
 	return vettore;
 }
 
+char* eliminaSpazziDxSx(char* str){
+    int n = strlen(str);
+    for(int i = 1; i < n; i++){
+        if(str[n-i] == ' ' || str[n-i] == '\t'){
+            str[n-i] = '\0';
+        } else {
+            break;
+        }
+    }
+    while(*str == ' ' || *str == '\t'){
+        str++;
+    }
+    return str;
+}
+
+
+char** split_variabile(char* str, int *numero){
+	char **vettore = malloc(64*sizeof(char*));
+    int i = 0;
+
+    char* token = strtok(str, " \t");
+    if(token != NULL){
+        vettore[i] = eliminaSpazziDxSx(token);
+        i++;
+    }
+
+    token = strtok(NULL, "=");
+    if(token != NULL){
+        vettore[i] =eliminaSpazziDxSx(token);
+        i++;
+    }
+
+    token = strtok(NULL, "");
+	if(token != NULL){
+		vettore[i] = eliminaSpazziDxSx(token);
+	}
+
+    *numero = i;
+    return vettore;
+}
+
+
+
 //funzione ha come argomento un array di caratteri.
 //restituisce il puntatore alla prima posizione non spazio.
 //str: stringa in input

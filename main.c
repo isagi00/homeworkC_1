@@ -72,10 +72,10 @@ int main(int argc, char *argv[]){
     Statistiche stats = {0};    //inizializza tutto a 0
 
     //controllo variabili
-    //controlloVariabile(nome_file_input, opzione_output, opzione_input);
+    controlloVariabile(nome_file_input, &stats);
 
     //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
-    controllaVarInutilizzate(nome_file_input, &stats);
+    //controllaVarInutilizzate(nome_file_input, &stats);
 
 
 
