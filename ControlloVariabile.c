@@ -147,7 +147,7 @@ bool controlloNome(char* parola){
 }
 
 bool controlloCorrettezzaVariabile(char* valore,char* tipo){
-	
+	//correttezza variabile char
 	if(strcmp(tipo,"char")==0){      
         
 		if(strlen(valore)<=3 && strlen(valore)>=2 && valore[0]=='\'' && valore[strlen(valore)-1]=='\''){
@@ -155,6 +155,7 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
 		}
         return false;
     }
+	//correttezza variabile int, long, short
 	else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 
 
         for(int i = 1; i <strlen(valore); i++){
@@ -164,8 +165,8 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
             }
         }
         return true;
-
     }
+	//correttezza variabile float o double
 	else if(strcmp(tipo,"float")==0 || strcmp(tipo,"double")==0){
     	bool haPunto = false;
     	bool haE = false;
