@@ -1,5 +1,8 @@
 [STAT] numero di variabili controllate: 0
 [STAT] numero di errori rilevati: 0
-[STAT] numero di variabilio non utilizzati: 2
+[STAT] numero di variabili non utilizzati: 3
 [STAT] numero di nomi delle variabili non corretti: 0
 [STAT] numero di tipi di dato scorretti:  0
+variabile 'i' inutilizzata alla riga 5
+variabile 'lskaks' inutilizzata alla riga 6
+variabile 'm' inutilizzata alla riga 8

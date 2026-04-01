@@ -362,6 +362,7 @@ char* controlloVariabile(char* filename, Statistiche *stats){
                             stats->errori_rilevati++;
 							printf("[ERRORE riga %d] valore scorretto: %s\n", numeroRiga, parole_split_s[j]);
                         }
+<<<<<<< HEAD
                     }
                 }
             }*/
@@ -428,20 +429,26 @@ char* controlloVariabile(char* filename, Statistiche *stats){
 		}
 	*/
 	fclose(file);
+=======
+                        free(parole_split_s);
+		}
+	numeroRiga++;
+	free(parole_split_pv);
+	}
+>>>>>>> 565b50477bb99da18f862874961d8a09bca027f0
 	printf("[ControlloVariabile] termine controllo variabili\n");
 	return NULL;
 }
 
 
 //controlla variabili inutilizzate
-//TODO: la lista variabili viene popolata, ma adesso da controllare l'utilizzo di esse nel codice.
-void controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
+List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 	List* variabili = list_create();	//lista per tenere traccia le variabili
 
 	FILE* file = fopen(nome_file_in, "r");
 	if (file == NULL) {
 		printf("[ControlloVariabile] controlla_var_inutilizzate: errore di apertura file\n");
-		return;
+		return NULL;
 	}
 
 	char riga[512]; //buffer per leggere una riga alla volta
@@ -449,9 +456,9 @@ void controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 
 	//ciclo principale che scorre le righe del file
 	//nota: fgets(char *str, int n, FILE *stream):
-	//	*str: buffer dove viene salvata la stringa letta
+	//	str: buffer dove viene salvata la stringa letta
 	//	n: numero massimo di caratteri da leggere
-	//	*stream: sorgente da cui leggere
+	//	stream: sorgente da cui leggere
 	//
 	//si ferma sempre al \n, che viene incluso.
 	//aggiunge il terminatore \0 alla fine della riga
@@ -478,7 +485,17 @@ void controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 
 		//ottieni i token per la riga
 		int numero_token;
-		char** tokens = split(riga_pulita, " \t", &numero_token);
+		char** tokens = split(riga_pulita, " \t;", &numero_token);
+
+		/*
+		for(int i = 0; i< numero_token; i++){
+			printf("[TOKENS] : %s \n", tokens[i]);
+		}
+		*/
+		
+
+
+
 
 		//controlla se è una dichiarazione valida di variabile, e lo mette nella lista variabili
 		for (int i = 0; i < numero_token; i++){	//per ogni token
@@ -487,6 +504,15 @@ void controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 				if (strcmp(tokens[i], tipi_base[t]) == 0 && i+1 < numero_token){
 					//tronca il nome dell variabile al primo carattere non alfanum (es. =, ;, [)
 					char *candidato = pulisciNomeVariabile(tokens[i+1]);
+
+					//controlla se il token corrente è una funzione
+					//printf("[DEBUG] CANDIDATO var CORRENTE : %s\n", candidato);
+					if (strchr(tokens[i+1], '(') != NULL){
+    					free(candidato);
+						printf("funzione rilevata alla riga %i\n", riga_attuale);
+   					 	break;  // è una funzione, salta
+					}
+
 
 					//filtra puntatori, array, main
 					if(candidato[0] != '*' && candidato[0] != '[' && strcmp(candidato, "main") != 0 && isalpha(candidato[0])){
@@ -550,9 +576,8 @@ void controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 				stats->variabili_inutilizzate++;
 			}
 		}
-	list_free(variabili);
 	fclose(file);
-	return;
+	return variabili;
 
 }
 
