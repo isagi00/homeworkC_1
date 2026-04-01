@@ -22,6 +22,7 @@ bool isMain(char* riga) {
     if(numeroParola < 1){
         free(parola);
         return false;
+		//palle
     }
 
     int p;
@@ -362,7 +363,6 @@ char* controlloVariabile(char* filename, Statistiche *stats){
                             stats->errori_rilevati++;
 							printf("[ERRORE riga %d] valore scorretto: %s\n", numeroRiga, parole_split_s[j]);
                         }
-<<<<<<< HEAD
                     }
                 }
             }*/
@@ -429,13 +429,6 @@ char* controlloVariabile(char* filename, Statistiche *stats){
 		}
 	*/
 	fclose(file);
-=======
-                        free(parole_split_s);
-		}
-	numeroRiga++;
-	free(parole_split_pv);
-	}
->>>>>>> 565b50477bb99da18f862874961d8a09bca027f0
 	printf("[ControlloVariabile] termine controllo variabili\n");
 	return NULL;
 }
