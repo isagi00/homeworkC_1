@@ -8,6 +8,7 @@
 
 const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
 
+//stampa le parola della riga corrente
 void stampaParoleSplit(char **parole, int numero_parole) {
     printf("Contenuto di parole_split_pv (numero_parole = %d):\n", numero_parole);
     for (int i = 0; i < numero_parole; i++) {
@@ -15,11 +16,12 @@ void stampaParoleSplit(char **parole, int numero_parole) {
     }
 }
 
+//controlla se dichiarazione main valida
 bool isMain(char* riga) {
     int numeroParola;
     char** parola = split(riga, "()", &numeroParola);
     
-    if(numeroParola < 1){
+    if(numeroParola <= 1){
         free(parola);
         return false;
 		//palle
@@ -47,7 +49,7 @@ bool isMain(char* riga) {
         if(controlloPrimaParte && controlloSecondaParte){
             free(parola);
             return true;
-        }
+		}
     } else {
         if(controlloPrimaParte){
             free(parola);
@@ -152,17 +154,19 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
 			return true;
 		}
         return false;
-    }else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 
+    }
+	else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 
 
         for(int i = 1; i <strlen(valore); i++){
 	
-            if(!(isalnum(valore[i]) ||valore[i]=='+'||valore[i]=='-'||valore[i])==' '|| valore[i]=='\t'){
+            if( !(isalnum(valore[i]) ||valore[i]=='+'||valore[i]=='-'||valore[i]==' '|| valore[i]=='\t') ){
                 return false;
             }
         }
         return true;
 
-    }else if(strcmp(tipo,"float")==0 || strcmp(tipo,"double")==0){
+    }
+	else if(strcmp(tipo,"float")==0 || strcmp(tipo,"double")==0){
     	bool haPunto = false;
     	bool haE = false;
     	int len = strlen(valore);

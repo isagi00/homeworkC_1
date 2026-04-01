@@ -75,13 +75,9 @@ int main(int argc, char *argv[]){
     controlloVariabile(nome_file_input, &stats);
 
     //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
-<<<<<<< HEAD
-    //controllaVarInutilizzate(nome_file_input, &stats);
-=======
     List *var_inutilizzate = controllaVarInutilizzate(nome_file_input, &stats);
 
 
->>>>>>> 565b50477bb99da18f862874961d8a09bca027f0
 
 
 
