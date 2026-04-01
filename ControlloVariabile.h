@@ -21,7 +21,7 @@ char*  controlloVariabile(char* filename,Statistiche *stats);
 
 //char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);
 
-List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats);
+List* controllaUtilizzoVariabili(char *nome_file_in, Statistiche *stats);
 
 //fine include guard
 #endif

@@ -18,6 +18,13 @@ Il programma prevede tre parametri di input
 2. -o --out (notazione doppio trattino) per specificare il file di output su cui salvare le statistiche. Se questo parametro non viene usato, l'output e' automaticamente ridirezionato sullo stdout
 3. -v, --verbose (notazione doppio trattino) per visualizzare sullo stdout le statistiche di elaborazione
 
+int i; int a; 
+
+int i;
+int a;
+
+
+
 Esempi di esecuzione
 - myPreCompiler -i nome_file_input.c \
     memorizza nel file nome_file_output  le statistiche prodotte.
@@ -30,11 +37,11 @@ Statistiche di elaborazione
 Il programma myPreCompiler deve calcolare le seguenti statistiche di elaborazione:
 1. Numero totale di variabili controllate
 2. Numero totale di errori rilevati (identificatori non corretti, tipi di dato non  corretti, variabili non utilizzate)
-3. Numero di variabili non utilizzate
+3. Numero di variabili non utilizzate [ok]
 4. Numero di nomi di variabili non corretti
 5. Numero di tipi di dato non corretti
-6. Per ogni errore rilevato, il numero di riga nel file (e il nome del file, qualora consideriate che il programma possa analizzare più file).
-7. Per ogni variabile non utilizzata, il nome della variabile.
+6. Per ogni errore rilevato, il numero di riga nel file (e il nome del file, qualora consideriate che il programma possa analizzare più file).  [ok]
+7. Per ogni variabile non utilizzata, il nome della variabile. [ok]
 
 Errori
 L'applicazione sviluppata deve gestire i seguenti errori

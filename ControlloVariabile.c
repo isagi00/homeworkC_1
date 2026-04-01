@@ -8,7 +8,8 @@
 
 const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
 
-//stampa le parola della riga corrente
+//stampa le parole su terminale in 'parole'. 
+//usato rigorosamente dopo il split. 
 void stampaParoleSplit(char **parole, int numero_parole) {
     printf("Contenuto di parole_split_pv (numero_parole = %d):\n", numero_parole);
     for (int i = 0; i < numero_parole; i++) {
@@ -18,45 +19,119 @@ void stampaParoleSplit(char **parole, int numero_parole) {
 
 //controlla se dichiarazione main valida
 bool isMain(char* riga) {
-    int numeroParola;
-    char** parola = split(riga, "()", &numeroParola);
+    int numero_sezioni;
+    char** sezioni = split(riga, "()", &numero_sezioni);	//divide la dichiarazione del main in 2 sezioni: 'int main' 'argomenti'
     
-    if(numeroParola <= 1){
-        free(parola);
+	//se il numero di sezioni è 0, allora è una dichiarazione di main non valida
+    if(numero_sezioni < 1){
+        free(sezioni);
         return false;
 		//palle
     }
 
+	//controllo della sezione 'int main'	[ok]
     int p;
     bool controlloPrimaParte = false;
-    char** primaParte = split(parola[0], " \t", &p);
-    if(p >= 2 && strcmp(primaParte[0], "int") == 0 && strcmp(primaParte[1], "main") == 0){
+    char** primaParte = split(sezioni[0], " \t", &p);
+    if(p == 2 && strcmp(primaParte[0], "int") == 0 && strcmp(primaParte[1], "main") == 0){
         controlloPrimaParte = true;
     }
     free(primaParte);
+	//se ci sta 'int main' allora continua a controllare se gli argomenti sono corretti.
+    if(numero_sezioni == 2 && strlen(sezioni[1]) > 0){
+		// sezioni[1] contiene la sezione dei parametri: 'int argc, char *argv[]'
 
-    if(numeroParola > 1 && strlen(parola[1]) > 0){
-        int p1;
+        int numero_parole_argomenti;
         bool controlloSecondaParte = false;
-        char** secondaParte = split(parola[1], " ,\t", &p1);
-        if(p1 >= 4 && strcmp(secondaParte[0], "int") == 0 && strcmp(secondaParte[1], "argc") == 0
-        && strcmp(secondaParte[2], "char") == 0 && strcmp(secondaParte[3], "*argv[]") == 0)
-        {
+        char** argomenti = split(sezioni[1], " ,\t", &numero_parole_argomenti);
+		//per debug
+		for (int i = 0; i < numero_parole_argomenti; i++){
+			printf("[DEBUG] argomenti: '%s'\n",argomenti[i]);
+		}
+
+		//caso: 'int main(void)	[ok]
+		if (numero_parole_argomenti == 1 &&
+		strcmp(argomenti[0], "void") == 0)
+		{
+			controlloSecondaParte = true;
+		}
+
+		//caso: 'int argc, char*argv[]'
+		//o: 'int argc, char**argv[]'
+		else if (numero_parole_argomenti == 3 &&
+		strcmp(argomenti[0], "int") == 0 &&
+		strcmp(argomenti[1], "argc") == 0 &&
+		(strcmp(argomenti[2], "char*argv[]") == 0 || strcmp(argomenti[2], "char**argv[]") == 0))
+		{
+			controlloSecondaParte = true;
+		}
+
+		//caso in cui 'int argc, char *argv[]'	[ok]
+		//o 'int argc, char **argv[]'
+        else if(numero_parole_argomenti == 4 && 
+			strcmp(argomenti[0], "int") == 0 && 
+			strcmp(argomenti[1], "argc") == 0 && 
+			strcmp(argomenti[2], "char") == 0 && 
+			(strcmp(argomenti[3], "*argv[]") == 0 || strcmp(argomenti[3], "**argv[]") == 0)){
             controlloSecondaParte = true;
         }
-        free(secondaParte);
 
-        if(controlloPrimaParte && controlloSecondaParte){
-            free(parola);
-            return true;
+		//caso in cui 'int argc, char* argv[]'       (asterisco/asterischi attaccato a char)
+		//o 'int argc, char** argv[]'
+		else if (numero_parole_argomenti == 4 &&
+		strcmp(argomenti[0], "int") == 0 &&
+		strcmp(argomenti[1], "argc") == 0 &&
+		(strcmp(argomenti[2], "char*") == 0 || strcmp(argomenti[2], "char**") == 0) &&
+		strcmp(argomenti[3], "argv[]") == 0) {
+			controlloSecondaParte = true;
 		}
-    } else {
-        if(controlloPrimaParte){
-            free(parola);
+
+		//caso in cui 'int argc, char 		*			argv[]'	[ok]
+		// o 'int argc, char     **     argv[]'
+		else if (numero_parole_argomenti == 5 && 
+			strcmp(argomenti[0], "int") == 0 && 
+			strcmp(argomenti[1], "argc") == 0 &&
+			strcmp(argomenti[2], "char") == 0 && 
+			(strcmp(argomenti[3], "*") == 0 || strcmp(argomenti[3], "**") == 0) && strcmp(argomenti[4], "argv[]") == 0){
+				controlloSecondaParte = true;
+		}
+
+		//caso in cui 'int main(int argc, char *       argv      []
+		//o: 'int main(int argc, char    **       argv      []
+		else if (numero_parole_argomenti == 6 && 
+			strcmp(argomenti[0], "int") == 0 && 
+			strcmp(argomenti[1], "argc") == 0 &&
+			strcmp(argomenti[2], "char") == 0 && 
+			(strcmp(argomenti[3], "*") == 0 || strcmp(argomenti[3], "**") == 0) && 
+			strcmp(argomenti[4], "argv") == 0 &&
+			strcmp(argomenti[5], "[]") == 0){
+				controlloSecondaParte = true;
+		}
+
+		//caso in cui 'int main(int argc, char 	*	 argv 	[     ])
+
+
+
+        free(argomenti);
+
+
+		//se entrambi le sezioni sono corrette, ritorna true		[ok]
+        if(controlloPrimaParte && controlloSecondaParte){
+            free(sezioni);
             return true;
         }
     }
-    free(parola);
+
+	//caso in cui int main()	[ok]
+	else {
+        if(controlloPrimaParte){
+            free(sezioni);
+            return true;
+        }
+    }
+    free(sezioni);
+
+	//altrimenti dichiarazione non valida
     return false;
 }
 
@@ -193,18 +268,18 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
             	return false;
         	}
     	}
-    free(valore);
-    return true;
-
+	//correttezza bool
 	}else if(strcmp(tipo,"bool")==0){     
         if(strcmp(valore,"true")==0  || strcmp(valore,"false")==0 || strcmp(valore,"1")==0 || strcmp(valore,"0")==0){
             return true;
         }
         return false;
     }
-	
+	free(valore);
+    return true;
 }
 
+//controlla se la dichiarazione della variabile è valida
 bool controllaDichiarazioneVariabile(char* parola){
 	int numero_parte;
 	char* parole_copia=strdup(parola);
@@ -219,7 +294,8 @@ bool controllaDichiarazioneVariabile(char* parola){
 	
 	if(numero_parte<=1){
 		return false; //int 
-	}else if(numero_parte==2){ // int i
+	}
+	else if(numero_parte==2){ // int i
 		if(controlloTipo(parte_variabile[0])){
 			if(controlloNome(parte_variabile[1])){
 				return true;
@@ -231,7 +307,8 @@ bool controllaDichiarazioneVariabile(char* parola){
 		else{
 			return false;
 		}
-	}else if(numero_parte==3){
+	}
+	else if(numero_parte==3){
 		if(controlloTipo(parte_variabile[0]) && controlloNome(parte_variabile[1])){
 			if(controlloCorrettezzaVariabile(parte_variabile[2],parte_variabile[0])){
 				return true;
@@ -261,7 +338,7 @@ char* controlloVariabile(char* filename, Statistiche *stats){
 
     char riga[128];
     int numero_pv, numero_s;
-    int numeroRiga = 0;
+    int numeroRiga = 1;
     bool esisteMain = false;
 
     while(fgets(riga, sizeof(riga), file) != NULL){
@@ -270,18 +347,20 @@ char* controlloVariabile(char* filename, Statistiche *stats){
         char *rigaPul = rimuoviSpaziSx(riga);
         char **parole_split_pv = split(rigaPul, "{};", &numero_pv);
 		//stampaParoleSplit(parole_split_pv,numero_pv);
+		//riga vuota
         if(numero_pv == 0){
             free(parole_split_pv);
             numeroRiga++;
             continue;
         }
-
-        if(controllaRigaCommento(parole_split_pv[0]) || controllaRigaInclude(parole_split_pv[0])  || strcmp(parole_split_pv[0], "{") == 0 || strcmp(parole_split_pv[0], "}") == 0){
+		//commneto o include 
+        if(controllaRigaCommento(parole_split_pv[0]) || controllaRigaInclude(parole_split_pv[0])){
             numeroRiga++;
             free(parole_split_pv);
             continue;
         }
 		
+		//
         for(int i = 0; i < numero_pv; i++){
             char *cp = parole_split_pv[i];
 			char *cp1 = strdup(rimuoviSpaziSx(cp));
@@ -290,26 +369,33 @@ char* controlloVariabile(char* filename, Statistiche *stats){
             //char **parole_split_s = split(cp, " ", &numero_s);
 
 			//printf("%s\n",cp);
+
+			//controlla se è una dichirazione valida di main
             if(isMain(cp)){
 				if(!esisteMain){
-					printf("Questa è main riga:%i\n",numeroRiga);
+					printf("[ControlloVariabile] Questa è main riga:%i\n",numeroRiga);
                		esisteMain = true;
 					continue;
 				}
 				else{
 					stats->errori_rilevati++;
-					printf("[ERRORE MAIN]:doppia main riga %i\n",numeroRiga);
+					printf("[ControlloVariabile]: rilevato un secondo main alla riga:  %i\n",numeroRiga);
                 	continue;
             	}
-			}else if(isFunzione(cp1)){
-				printf("è una funzione %d riga: %i\n",isFunzione(cp1),numeroRiga);
-			}else{
+			}
+			//controlla se è una dichiarazione valida di funzione
+			else if(isFunzione(cp1)){
+				printf("[ControlloVariabile] rilevata una funzione %d riga: %i\n",isFunzione(cp1),numeroRiga);
+			}
+			//controlla se è una dichiarazione valida di variabile
+			else{
 				//printf("%s è una funzione %d riga: %i\n",cp1,isFunzione(cp1),numeroRiga);
 				if(controllaDichiarazioneVariabile(cp1)){
 					printf("(Dichiarazione Variabile) riga: %i\n",numeroRiga);
 				}
 				else{
 					printf("[Errore Variabile] %s riga: %i\n",cp1,numeroRiga);
+					
 				}
 			}
 			
@@ -377,70 +463,15 @@ char* controlloVariabile(char* filename, Statistiche *stats){
         numeroRiga++;
         free(parole_split_pv);
     }
-
-
-
-
-/*
-		char **parole = split(riga," \t", &numero_parole_riga_corrente);
-
-		//debug
-		printf("[DEBUG] riga %d\n", numeroRiga);
-		for (int i = 0; i < numero_parole_riga_corrente; i++){
-			printf("stringa:[%s] \n", parole[i]);  // stampa ogni stringa tra virgolette
-		}
-
-		
-		//controllo riga vuota
-		if (numero_parole_riga_corrente == 0) {
-            printf("[ControlloVariabile] riga %d vuota, skip\n", numeroRiga);
-            free(parole);
-            numeroRiga++;
-            continue;  // salta alla prossima riga
-        }
-
-		//controlla se è #include o //commento
-		if (parole[0][0] == '#' || (parole[0][0] == '/' && strlen(parole[0]) > 1 && parole[0][1] == '/')) {
-            printf("[ControlloVariabile] riga %d: commento/include, skip\n", numeroRiga);
-            free(parole);
-            numeroRiga++;
-            continue;  // salta alla prossima riga
-        }
-			
-		//controllo tipi variabile
-		if((strcmp(parole[0],"int") == 0 || strcmp(parole[0],"long") == 0 || strcmp(parole[0], "short") == 0 )){
-            printf("[ControlloVariabile] rilevato tipo intero alla riga %i\n", numeroRiga);
-			variabili_controllate += 1;
-		}
-		else if(strcmp(parole[0],"char")==0){
-			printf("[ControlloVariabile] rilevato tipo char alla riga %i\n", numeroRiga);
-			variabili_controllate += 1;
-		}
-        else if(strcmp(parole[0],"float")==0){
-            printf("[ControlloVariabile] rilevato tipo float alla riga %i\n", numeroRiga); 
-			variabili_controllate += 1;          
-		}
-		else if(strcmp(parole[0],"bool")==0){
-            printf("[ControlloVariabile] rilevato tipo bool alla riga %i\n", numeroRiga);         
-			variabili_controllate += 1;                      
-		}
-		else{
-			printf("[ControlloVariabile] rilevato errore di tipo alla riga %i\n", numeroRiga);
-			errori_rilevati += 1;
-		}
-		//pulizia fine riga
-        numeroRiga++; //passa riga successiva
-		free(parole);	//libera spazio riservato dell'array parole   
-		}
-	*/
 	fclose(file);
 	printf("[ControlloVariabile] termine controllo variabili\n");
 	return NULL;
 }
 
 
-//controlla variabili inutilizzate
-List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
+//funziona ritorna una lista di tutte le variabili dichiarate.
+//setta flag di ogni variabile se è stata utilizzata o non.
+List* controllaUtilizzoVariabili(char *nome_file_in, Statistiche *stats){
 	List* variabili = list_create();	//lista per tenere traccia le variabili
 
 	FILE* file = fopen(nome_file_in, "r");
@@ -525,7 +556,7 @@ List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 	} 
 
 
-	//secondo passaggio 
+	//secondo passaggio per vedere l'utilizzo
 	rewind(file);
 	riga_attuale = 0;
 
@@ -561,15 +592,6 @@ List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 		}
 		free(tokens);
 	}
-
-		//controllo finale delle variabili non utilizzate
-		for (int i = 0; i < variabili->numero_elementi_attuali; i++){
-			Variabile *var = list_get(variabili, i);
-			if (var->usata == false){
-				printf("[ControllaVarInutilizzate] variabile '%s' non usata\n", var->nome);
-				stats->variabili_inutilizzate++;
-			}
-		}
 	fclose(file);
 	return variabili;
 }

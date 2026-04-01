@@ -16,6 +16,7 @@ bool controllaRigaCommento(char *str);
 bool controllaRigaInclude(char *str);
 bool controllaRigaVuota(char *str);
 char *pulisciNomeVariabile(char *token);
+void compatta_stringa(char* dest, const char* src);
 
 
 
@@ -49,6 +50,7 @@ typedef struct{
 	int tipi_dato_scorretti;
 } Statistiche;
 
+int conta_var_inutilizzate(List *vars);
 void salva_statistiche_file_esterno(char *nome_file_output, Statistiche *stats, List *var_inutilizzate);
 void stampa_statistiche_su_terminale(Statistiche *stats, List *var_inutilizzate);
 

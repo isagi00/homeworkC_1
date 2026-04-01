@@ -137,6 +137,25 @@ char *pulisciNomeVariabile(char *token){
 	return copia;
 }
 
+/* ricompatta una stringa rimuovendo spazi e tab.
+ad esempio: "int argc,     char **      argv    [    ]"
+diventa:	"intargc,char**argv[]"
+- dest: destinazione della stringa compattata
+- src: stringa da compattare
+*/
+void compatta_stringa(char* dest, const char* src){
+	int j = 0;
+	for(int i = 0; src[i] != '\0'; i++){
+		if(src[i] != ' ' && src[i] != '\t'){
+			dest[j] = src[i];
+			j++;
+		}
+	}
+	dest[j] = '\0';	//aggiungi terminatore di stringa
+}
+
+
+
 
 
 
@@ -257,6 +276,22 @@ typedef struct{
 	int tipi_dato_scorretti;
 } Statistiche;
 
+int conta_var_inutilizzate(List *vars){
+	//lista vuota
+	if (vars->numero_elementi_attuali==0){
+		return 0;
+	}
+	//conta var inutilizzate
+	int count = 0;
+	for (int i=0; i < vars->numero_elementi_attuali; i++){
+		Variabile *var = list_get(vars, i);
+		if (var->usata == false){
+			count++;
+		}
+	}
+	return count;
+}
+
 
 
 //salva statistiche su file esterno
@@ -264,43 +299,49 @@ void salva_statistiche_file_esterno(char *nome_file_output, Statistiche *stats, 
 	FILE *file_pointer = fopen(nome_file_output, "w"); //puntatore a file esterno
 
 	if (file_pointer == NULL) {
-		printf("[ControlloVariabile] salva_statistiche_file_esterno : Errore apertura file output\n");
+		printf("[STAT] salva_statistiche_file_esterno : Errore apertura file output\n");
 		return;
 	}
+
+	stats->variabili_inutilizzate = conta_var_inutilizzate(var_inutilizzate);
+
 	//scrittura su file output
-	fprintf(file_pointer, "[STAT] numero di variabili controllate: %i\n", stats->variabili_controllate);
-	fprintf(file_pointer, "[STAT] numero di errori rilevati: %i\n", stats->errori_rilevati);
-	fprintf(file_pointer, "[STAT] numero di variabili non utilizzati: %i\n", stats->variabili_inutilizzate);
-	fprintf(file_pointer, "[STAT] numero di nomi delle variabili non corretti: %i\n", stats->nomi_variabili_non_corretti);
-	fprintf(file_pointer, "[STAT] numero di tipi di dato scorretti:  %i\n", stats->tipi_dato_scorretti);
+	fprintf(file_pointer, "[STAT] salva_statistiche_file_esterno: numero di variabili controllate: %i\n", stats->variabili_controllate);
+	fprintf(file_pointer, "[STAT] salva_statistiche_file_esterno: numero di errori rilevati: %i\n", stats->errori_rilevati);
+	fprintf(file_pointer, "[STAT] salva_statistiche_file_esterno: numero di variabili non utilizzati: %i\n", stats->variabili_inutilizzate);
+	fprintf(file_pointer, "[STAT] salva_statistiche_file_esterno: numero di nomi delle variabili non corretti: %i\n", stats->nomi_variabili_non_corretti);
+	fprintf(file_pointer, "[STAT] salva_statistiche_file_esterno: numero di tipi di dato scorretti:  %i\n", stats->tipi_dato_scorretti);
 
 	//scrittura nome variabili non usate
 	for (int i = 0; i < var_inutilizzate->numero_elementi_attuali; i++){
 		Variabile *var = list_get(var_inutilizzate, i);
 		if (var->usata == false){
-			fprintf(file_pointer,"variabile '%s' inutilizzata alla riga %i\n", var->nome, var->riga_dichiarata);
+			fprintf(file_pointer,"[STAT] salva_statistiche_file_esterno: Variabile '%s' inutilizzata alla riga %i\n", var->nome, var->riga_dichiarata);
 		}
 	}
 
 	fclose(file_pointer);
-	printf("[ControlloVariabile] salva_statistiche_file_esterno: statistiche salvate in '%s'\n", nome_file_output);
+	printf("[STAT] salva_statistiche_file_esterno: statistiche salvate in '%s'\n", nome_file_output);
 	return;
 }
 
 
 //stampa statistiche su terminale
 void stampa_statistiche_su_terminale(Statistiche *stats, List *var_inutilizzate){
-	printf("[STAT] numero di variabili controllate: %i\n", stats->variabili_controllate);
-	printf("[STAT] numero di errori rilevati: %i\n", stats->errori_rilevati);
-	printf("[STAT] numero di variabilio non utilizzati: %i\n", stats->variabili_inutilizzate);
-	printf("[STAT] numero di nomi delle variabili non corretti: %i\n", stats->nomi_variabili_non_corretti);
-	printf("[STAT] numero di tipi di dato scorretti: %i:\n", stats->tipi_dato_scorretti);
+
+	stats->variabili_inutilizzate = conta_var_inutilizzate(var_inutilizzate);
+
+	printf("[STAT] stampa_statistiche_su_terminale: numero di variabili controllate: %i\n", stats->variabili_controllate);
+	printf("[STAT] stampa_statistiche_su_terminale: numero di errori rilevati: %i\n", stats->errori_rilevati);
+	printf("[STAT] stampa_statistiche_su_terminale: numero di variabilio non utilizzati: %i\n", stats->variabili_inutilizzate);
+	printf("[STAT] stampa_statistiche_su_terminale: numero di nomi delle variabili non corretti: %i\n", stats->nomi_variabili_non_corretti);
+	printf("[STAT] stampa_statistiche_su_terminale: numero di tipi di dato scorretti: %i:\n", stats->tipi_dato_scorretti);
 
 	//scrittura nome variabili non usate
 	for (int i = 0; i < var_inutilizzate->numero_elementi_attuali; i++){
 		Variabile *var = list_get(var_inutilizzate, i);
 		if (var->usata == false){
-			printf("variabile '%s' inutilizzata alla riga %i\n", var->nome, var->riga_dichiarata);
+			printf("[STAT]stampa_statistiche_su_terminale: variabile '%s' inutilizzata alla riga %i\n", var->nome, var->riga_dichiarata);
 		}
 	}
 	return;
