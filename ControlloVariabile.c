@@ -464,15 +464,15 @@ List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 
 		//se la riga corrente è commento o #include o vuota, salta.
 		if(controllaRigaCommento(riga_pulita) == true){
-			printf("[controllaVarInutilizzata]: commento  alla riga %i\n", riga_attuale);
+			//printf("[controllaVarInutilizzata]: commento  alla riga %i\n", riga_attuale);
 			continue;
 		}
 		else if(controllaRigaInclude(riga_pulita) == true){
-			printf("[controllaVarInutilizzata]: include  alla riga %i\n", riga_attuale);
+			//printf("[controllaVarInutilizzata]: include  alla riga %i\n", riga_attuale);
 			continue;
 		}
 		else if(controllaRigaVuota(riga_pulita) == true){
-			printf("[controllaVarInutilizzata]: riga %i vuota\n", riga_attuale);
+			//printf("[controllaVarInutilizzata]: riga %i vuota\n", riga_attuale);
 			continue;
 		}
 
@@ -486,10 +486,6 @@ List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 		}
 		*/
 		
-
-
-
-
 		//controlla se è una dichiarazione valida di variabile, e lo mette nella lista variabili
 		for (int i = 0; i < numero_token; i++){	//per ogni token
 			//controlla se tokens[i] è un tipo
@@ -502,7 +498,7 @@ List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 					//printf("[DEBUG] CANDIDATO var CORRENTE : %s\n", candidato);
 					if (strchr(tokens[i+1], '(') != NULL){
     					free(candidato);
-						printf("funzione rilevata alla riga %i\n", riga_attuale);
+						//printf("funzione rilevata alla riga %i\n", riga_attuale);
    					 	break;  // è una funzione, salta
 					}
 
@@ -553,7 +549,7 @@ List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 				if (strcmp(token_pulito, var_att->nome) == 0 && riga_attuale != var_att->riga_dichiarata){
 					//se il token è uguale al nome della variabile e la riga attuale non è la riga in cui la var è stata dichiarata
 					var_att->usata = true;	//allora la var è stata utilizzata
-					printf("variabile %s utilizzata alla riga %i\n", var_att->nome, riga_attuale);
+					printf("variabile '%s' utilizzata alla riga %i\n", var_att->nome, riga_attuale);
 				}
 				free(token_pulito);
 			}
@@ -565,13 +561,12 @@ List* controllaVarInutilizzate(char *nome_file_in, Statistiche *stats){
 		for (int i = 0; i < variabili->numero_elementi_attuali; i++){
 			Variabile *var = list_get(variabili, i);
 			if (var->usata == false){
-				printf("[ControllaVarInutilizzate] variabile %s non usata\n", var->nome);
+				printf("[ControllaVarInutilizzate] variabile '%s' non usata\n", var->nome);
 				stats->variabili_inutilizzate++;
 			}
 		}
 	fclose(file);
 	return variabili;
-
 }
 
 
