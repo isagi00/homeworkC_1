@@ -67,6 +67,9 @@ int main(int argc, char *argv[]){
         }
     }
 
+    //salva le statistiche su un file esterno o stampa su terminale
+    printf("===========================[inizio analisi]===========================\n \n");
+
     //qui vanno le funzioni. 
 
     Statistiche stats = {0};    //inizializza tutto a 0
@@ -77,24 +80,28 @@ int main(int argc, char *argv[]){
     //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
     List *var_inutilizzate = controllaUtilizzoVariabili(nome_file_input, &stats);
 
+    
 
 
-    //salva le statistiche su un file esterno o stampa su terminale
     if (opzione_output == true && opzione_verbose == true){
         salva_statistiche_file_esterno(nome_file_output, &stats, var_inutilizzate);
         stampa_statistiche_su_terminale(&stats, var_inutilizzate);
+        printf("===========================[termine analisi]===========================\n");
         return 0;
     }
     else if (opzione_output == true && opzione_verbose == false){
         salva_statistiche_file_esterno(nome_file_output, &stats, var_inutilizzate);
+        printf("===========================[termine analisi]===========================\n");
         return 0;
     }
     else if (opzione_output == false){   //senza -o, --out: stampa su terminale di default
         stampa_statistiche_su_terminale(&stats, var_inutilizzate);
+        printf("===========================[termine analisi]===========================\n");
         return 0;
     }
 
 
+    
 }
 
 

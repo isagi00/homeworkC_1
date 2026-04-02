@@ -4,10 +4,13 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-//funzione splitta str in un array di token.
-//str: stringa in input
-//separatore: caratteri su cui splittare
-//numeroP: numero di token all'interno dell'array.
+/*funzione splitta str in un array di token.
+str: stringa in input. es: ("hello world")
+separatore: caratteri su cui splittare. es: (" \t;")
+numeroP: numero di token all'interno dell'array.
+ritorna una lista di stringhe splittate sui separatori specificati.
+es: ["hello", "world"]
+*/
 char** split(char* str,char* separatore, int *numeroP){
 	char **vettore = malloc(64*sizeof(char*));
 	char *token=strtok(str,separatore);
@@ -21,8 +24,15 @@ char** split(char* str,char* separatore, int *numeroP){
 	return vettore;
 }
 
-char* eliminaSpazziDxSx(char* str){
+/*
+elimina spazi a destra e sinistra della stringa
+- str: stringa. es: "		hello 	world		"
+ritorna la stringa con spazi eliminati. 
+es: "hello world"
+*/
+char* eliminaSpaziDxSx(char* str){
     int n = strlen(str);
+	//elimina spazi dx
     for(int i = 1; i < n; i++){
         if(str[n-i] == ' ' || str[n-i] == '\t'){
             str[n-i] = '\0';
@@ -30,6 +40,7 @@ char* eliminaSpazziDxSx(char* str){
             break;
         }
     }
+	//elimina spazi sx
     while(*str == ' ' || *str == '\t'){
         str++;
     }
@@ -43,19 +54,19 @@ char** split_variabile(char* str, int *numero){
 
     char* token = strtok(str, " \t");
     if(token != NULL){
-        vettore[i] = eliminaSpazziDxSx(token);
+        vettore[i] = eliminaSpaziDxSx(token);
         i++;
     }
 
     token = strtok(NULL, "=");
     if(token != NULL){
-        vettore[i] =eliminaSpazziDxSx(token);
+        vettore[i] =eliminaSpaziDxSx(token);
         i++;
     }
 
     token = strtok(NULL, "");
 	if(token != NULL){
-		vettore[i] = eliminaSpazziDxSx(token);
+		vettore[i] = eliminaSpaziDxSx(token);
 	}
 
     *numero = i;
@@ -64,9 +75,11 @@ char** split_variabile(char* str, int *numero){
 
 
 
-//funzione ha come argomento un array di caratteri.
-//restituisce il puntatore alla prima posizione non spazio.
-//str: stringa in input
+/*funzione ha come argomento un array di caratteri.
+restituisce il puntatore alla prima posizione non spazio.
+- str: stringa in input. es: "		hello world"
+ritorna: "hello world"
+*/
 char *rimuoviSpaziSx(char *str){
 	//str = puntatore
 	while(*str == ' ' || *str == '\t'){
@@ -75,9 +88,10 @@ char *rimuoviSpaziSx(char *str){
 	return str;
 }
 
-//controlla se la riga attuale è un commento.
-//restituisce true se è commento.
-//str: stringa in input
+/*controlla se la riga attuale è un commento.
+restituisce true se è commento.
+str: stringa in input
+*/
 bool controllaRigaCommento(char *str){
 	char *rigapulita = rimuoviSpaziSx(str);
 	
@@ -87,9 +101,10 @@ bool controllaRigaCommento(char *str){
 	return false;
 }
 
-//controlla se la riga attuale è un #include valido o non.
-//restituisce true se è valido.
-//str: stringa in input
+/*controlla se la riga attuale è un #include valido o non.
+restituisce true se è valido.
+str: stringa in input
+*/
 bool controllaRigaInclude(char *str){
 	char *riga_pulita = rimuoviSpaziSx(str);
 	char copia[256];
@@ -109,10 +124,11 @@ bool controllaRigaInclude(char *str){
 	}
 	return false;
 }
-
-//controlla se la riga attuale è una riga vuota (con solo \n).
-//restituisce true se è vuoto.
-//str: stringa in input
+/*
+controlla se la riga attuale è una riga vuota (con solo \n).
+restituisce true se è vuoto.
+str: stringa in input
+*/
 bool controllaRigaVuota(char *str){
 	char *riga_pulita = rimuoviSpaziSx(str);	//rimuove spazi davanti
 	riga_pulita[strcspn(riga_pulita, "\n")] = '\0';	//sostituisce \n con \0 (per sicurezza)
@@ -153,6 +169,9 @@ void compatta_stringa(char* dest, const char* src){
 	}
 	dest[j] = '\0';	//aggiungi terminatore di stringa
 }
+
+
+
 
 
 
@@ -256,6 +275,7 @@ void list_free(List* list){
 	//printf("[supporto] list_free: lista liberata correttamente\n");
 	return;
 }
+
 
 
 //variabile

@@ -18,3 +18,4 @@ int main(int argc,char** argv[]){
     bool opzione_output = false;
     bool opzione_verbose = false;
 }
+

@@ -17,6 +17,8 @@ extern int tipi_dato_scorretti;
 
 bool isMain(char* parola);
 bool controlloTipo(char* parola);
+bool controlloArgomentiMain(char* args);
+bool controlloNome(char* parola);
 char*  controlloVariabile(char* filename,Statistiche *stats);
 
 //char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);

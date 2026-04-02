@@ -10,7 +10,7 @@ int under_score= 5;
 
 
 
-int main(){
+int main(int abc, char *hello[]){
 
     int x = 5;
     float y=3.14;
