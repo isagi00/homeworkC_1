@@ -14,7 +14,7 @@ int main(int abc, char *hello[]){
 
     int x = 5;
     float y=3.14;
-    char nome[32];
+    char no%me[32];
     bool attivo = true;
     int contatore = 0;
 

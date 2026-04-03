@@ -182,6 +182,7 @@ void compatta_stringa(char* dest, const char* src){
 
 
 
+
 //strutture dati
 //lista
 typedef struct{

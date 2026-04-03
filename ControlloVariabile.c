@@ -7,6 +7,13 @@
 
 
 const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
+const char* keywords[] = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do",
+    "double", "else", "enum", "extern", "float", "for", "goto", "if",
+    "int", "long", "register", "return", "short", "signed", "sizeof", "static",
+    "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
+    NULL
+};
 
 /*stampa le stringhe dell'array dato. usato rigorosamente dopo il split. 
 - parole: array di stringhe. es : ["hello", "world"]
@@ -110,21 +117,88 @@ bool isFunzione(char* parola){
     return false;
 }
 
-bool controllaNome(char* parola){
+/*
+controlla se la stringa corrente è una keyword.
+-str: stringa
+ritorna true se è una keyword.
+*/
+bool is_keyword(char* str){
+	//check tipi
+	for (int i = 0; tipi_base[i] != NULL; i++){
+		if (strcmp(str,tipi_base[i]) == 0){
+			return true;
+		}
+	}
+	//check su altri keyword
+	for (int j = 0; keywords[j] != NULL; j++){
+		if(strcmp(str, keywords[j]) == 0){
+			return true;
+		}
+	}
+	return false;
+}
 
-    int n = strlen(parola);
+
+/*
+controlla se il nome della variabile dichirata è consentita.
+- parola: nome della variabile : es. 'var'
+ritorna true se il nome della variabile dichiarata è valida.
+*/
+bool controllaNome(char* parola){
+	if (parola == NULL || strlen(parola) == 0){
+		printf("[controlloNome] nome vuoto o NULL. \n");
+		return false;
+	}
+
+	char* copia = strdup(parola);
+	if (copia == NULL) return false;
+	char* pulito = eliminaSpaziDxSx(copia);
+    int n = strlen(pulito);
+
+	if(n == 0){
+		printf("[controllaNome] nome vuoto dopo pulizia spazi dx,sx. \n");
+		return false;
+	}
     
-    for(int i = 0; i < n; i++){
-        if(i == 0){
-            if(!(isalpha(parola[i]) || parola[i] == '_')){
-                return false;
-            }
-        }
-        else if(!(isalnum(parola[i]) || parola[i] == '_')){
-            return false;
-        }
-    }
-    return true;
+	for (int i = 0; i<n; i++){
+		//primo carattere puo essere solo lettera o '_'
+		if (i == 0){
+			if(!isalpha(pulito[i])  && pulito[i] != '_'){ 
+				printf("[controllaNome] il nome della variabile non può iniziare con '%c'. \n", pulito[i]);
+				free(copia);
+				return false;
+			}
+		}
+		//gli altri caratteri possono essere numeri, lettere o underscore
+		else {
+			if(!isalnum(pulito[i]) && pulito[i] != '_'){
+				printf("[controllaNome] carattere '%c' non può essere nome variabile. \n", pulito[i]);
+				free(copia);
+				return false;
+			}
+		}
+	}
+	
+	//controlla se è keyword
+	if (is_keyword(pulito)) {
+		printf("[controllaNome] '%s' è una parola chiave riservata.\n", pulito);
+        free(copia);
+        return false;
+	}
+
+	free(copia);
+	return true;
+
+    // for(int i = 0; i < n; i++){
+    //     if(i == 0){		//il primo carattere non può essere un intero. puo essere '_' ma è sconsigliato
+    //         if(!(isalpha(parola[i]) || parola[i] == '_')){
+    //             return false;
+    //         }
+    //     }
+    //     else if(!(isalnum(parola[i]) || parola[i] == '_')){
+    //         return false;
+    //     }
+    // }
 }
 
 /*
