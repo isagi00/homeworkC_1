@@ -18,10 +18,6 @@ Il programma prevede tre parametri di input
 2. -o --out (notazione doppio trattino) per specificare il file di output su cui salvare le statistiche. Se questo parametro non viene usato, l'output e' automaticamente ridirezionato sullo stdout
 3. -v, --verbose (notazione doppio trattino) per visualizzare sullo stdout le statistiche di elaborazione
 
-int i; int a; 
-
-int i;
-int a;
 
 
 

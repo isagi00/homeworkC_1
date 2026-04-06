@@ -548,7 +548,7 @@ char* controlloVariabile(char* filename, Statistiche *stats){
 			//printf("%s\n",cp);
 
 			//controlla se è una dichirazione valida di main
-            if(isMain(cp)){
+            if(isMain(cp)){			//per ogni riga viene chiamata questa funzione..... 这个要改一下 
 				if(!esisteMain){
 					printf("[ControlloVariabile] dichiarazione del main() corretta:%i\n",numeroRiga);
                		esisteMain = true;
@@ -577,6 +577,25 @@ char* controlloVariabile(char* filename, Statistiche *stats){
 					
 				}
 			}
+			//接下来要写struct? 
+
+			/*
+			
+			todo: 
+			1. se la riga contiene una keyword come if, oppure else if, ci sta sta controllare l'apertura delle
+			parentesi tonde e correttezza della dichiarazione della variabili o della condizione al suo interno.
+			if (int esempio) {
+			}
+
+			2. (forse da fare) contare il numero della graffe. alla fine del parsing del file si deve avere un numero di 
+			graffe aperte uguale al numero di graffe chiuse. poi se si errore non lo gestiamo ma ritorniamo un errore di tipo:
+			"mancano graffe " sul terminale
+			
+			3. al momento come 'numero di variabili controllate' vengono contante solo quelle che sono state dichiarate 
+			correttamente. contiamo anche quelli che sono stati dichiarati incorrettamente?
+			
+			*/
+
 			
 			/*else{
 				
