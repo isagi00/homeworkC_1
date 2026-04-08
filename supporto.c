@@ -131,6 +131,47 @@ bool controllaRigaCommento(char *str){
 	return false;
 }
 
+/*
+rimuove i commenti inline. non molto robusto eh dovrebbe gestire casi base 
+modifica la stringa in place
+*/
+void rimuoviCommentoInline(char* str){
+	if(!str) return;
+	int len = strlen(str);
+
+	//caso: "int a = 10 //commento "
+	for (int i = 0; i < len; i++){
+		if (i+1 >= len) break;
+		if(str[i] == '/' && str[i+1] == '/'){
+			str[i] = '\0';
+			return;
+		}
+	}
+
+	//caso: "int /* commento */ a = 10"
+	//per adesso mette spazi al posto del commento
+	int start = -1;	//-1 indica non trovato
+	int end = -1;
+	for (int j = 0; j < len - 1; j++){
+		if (str[j] == '/' && str[j+1] == '*'){
+			start = j;
+		}
+		else if (str[j] == '*' && str[j+1] == '/'){
+			end = j;
+			break;	//termina dopo averlo trovato
+		}
+	}
+	if(start != -1 && end != -1){
+		while (start <= end){
+			str[start] = ' ';
+			start++;
+		}
+	}
+
+	
+	return;
+}
+
 /*controlla se la riga attuale è un #include valido o non.
 restituisce true se è valido.
 str: stringa in input

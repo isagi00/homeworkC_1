@@ -1,5 +1,4 @@
 #include <stdalign.h>
-
 int main(int argc, char* argv[]){
     int a;  //commento inline
     int b;

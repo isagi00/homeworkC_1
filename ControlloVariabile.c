@@ -348,9 +348,14 @@ bool controlloArgomentiMain(char* args){
 
 
 
-
-bool controlloCorrettezzaVariabile(char* valore,char* tipo){
-	//correttezza variabile char
+/*
+controlla se il valore assegnato alla variabile è valido o non.
+-valore: stringa che rappresente il valore assegnato alla variabile. es:"10"
+-tipo: tipo di dato dichiarato per la variabile. es: "int"
+ritorna true se il valore assegnato è valido
+*/
+bool controlloValoreAssegnato(char* valore,char* tipo){
+	//char
 	if(strcmp(tipo,"char")==0){      
         
 		if(strlen(valore)<=3 && strlen(valore)>=2 && valore[0]=='\'' && valore[strlen(valore)-1]=='\''){
@@ -358,7 +363,7 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
 		}
         return false;
     }
-	//correttezza variabile int, long, short
+	//int, long, short
 	else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 
 
         for(int i = 1; i <strlen(valore); i++){
@@ -369,7 +374,7 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
         }
         return true;
     }
-	//correttezza variabile float o double
+	//float, double
 	else if(strcmp(tipo,"float")==0 || strcmp(tipo,"double")==0){
     	bool haPunto = false;
     	bool haE = false;
@@ -396,7 +401,7 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
             	return false;
         	}
     	}
-	//correttezza bool
+	//bool
 	}else if(strcmp(tipo,"bool")==0){     
         if(strcmp(valore,"true")==0  || strcmp(valore,"false")==0 || strcmp(valore,"1")==0 || strcmp(valore,"0")==0){
             return true;
@@ -408,55 +413,82 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
 }
 
 //controlla se la dichiarazione della variabile è valida
-bool controllaDichiarazioneVariabile(char* parola){
-	int numero_parte;
-	char* parole_copia=strdup(parola);
+bool controllaDichiarazioneVariabile(char* str){
+	if (!str) return false;
+
+	//duplica e splitta 
+	int n_parti;
+	char* copia_str=strdup(str);	//"int a = 10"
 	//printf("\n %s \n",parole_copia);
-    char** parte_variabile=split_variabile(parole_copia,&numero_parte);
-	int pppp=0;
-	/*while (parte_variabile[pppp]!=NULL){
-		printf("%s\n",parte_variabile[pppp]);
-		pppp++;
-	}
-*/
-	
-	if(numero_parte<=1){
-		return false; //int 
-	}
-	else if(numero_parte==2){ // int i
-		if(controlloTipo(parte_variabile[0])){
-			if(controllaNome(parte_variabile[1])){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}
-	}
-	else if(numero_parte==3){
-		if(controlloTipo(parte_variabile[0]) && controllaNome(parte_variabile[1])){
-			if(controlloCorrettezzaVariabile(parte_variabile[2],parte_variabile[0])){
-				return true;
-			}else{
-	////mmmmmmmmmmmmmmmmm
-			}
-		}
-		else{
-			return false;
-		}
-	}else{
+    char** parti_var=split_variabile(copia_str,&n_parti);	// "int", "a", "10"
+	if (!parti_var)
+	{
+		free(copia_str);
 		return false;
 	}
+	// stampaParoleSplit(parti_var, n_parti);
 
-    free(parte_variabile);
-    free(parole_copia);
-	return false;
+	// int pppp=0;
+// 	/*while (parte_variabile[pppp]!=NULL){
+// 		printf("%s\n",parte_variabile[pppp]);
+// 		pppp++;
+// 	}
+// */
+	bool risultato = false;
+	
+	//caso: "int"
+	if(n_parti<=1){
+		return false; //int 
+	}
+	//caso: "int a"
+	else if(n_parti==2){ // "int i"
+		// if(controlloTipo(parti_var[0])){
+		// 	if(controllaNome(parti_var[1])){
+		// 		return true;
+		// 	}
+		// 	else{
+		// 		return false;
+		// 	}
+		// }
+		// else{
+		// 	return false;
+		// }
+		risultato = (controlloTipo(parti_var[0]) && controllaNome(parti_var[1]));
+	}
+	//caso: "int a = 10"
+	else if(n_parti==3){	//"int i = 10"
+	// 	if(controlloTipo(parti_var[0]) && controllaNome(parti_var[1])){
+	// 		if(controlloValoreDichiaratoVar(parti_var[2],parti_var[0])){
+	// 			return true;
+	// 		}else{
+	// ////mmmmmmmmmmmmmmmmm
+	// 		}
+	// 	}
+	// 	else{
+	// 		return false;
+	// 	}
+	// }else{
+	// 	return false;
+		if (controlloTipo(parti_var[0]) && controllaNome(parti_var[1])){
+			if (controlloValoreAssegnato(parti_var[2], parti_var[0])){
+				risultato = true;
+			}
+			else{
+				printf("[controllaDichiarazioneVariabile] valore '%s' non valido per tipo '%s'\n", parti_var[2],parti_var[0]);
+			}
+		}
+	}
+
+    free(parti_var);
+    free(copia_str);
+	return risultato;
 }
 
-//controlla se dichiarazione main valida
+/*
+controlla se la riga corrente è una valida dichiarazione del main().
+-riga: riga attuale
+ritorna true se è una valida dichiarazione di main. es: "int main (int argc, char* argv[])"
+*/
 bool isMain(char* riga) {
 	if(riga == NULL) return false;
 
@@ -674,7 +706,7 @@ char* controlloVariabile(char* filename, Statistiche *stats){
 /*
 controlla se la dichiarazione di if/else/while/for sia corretta
 token deve non avere spazi a sx.
-- token: stringha in forma "if (zh给)..."
+- token: stringa in forma "if (zh给)..."
 */
 bool controllaStrutturaControllo(char* token, int riga, Statistiche* stats){
 	if (!token) return false;
@@ -731,9 +763,14 @@ bool controllaStrutturaControllo(char* token, int riga, Statistiche* stats){
 	return ok_parentesi;
 }	
 
+/*
+la funzione controlla la correttezza di:
+1. dichiarazione del main + argomenti
+2. dichiarazione delle strutture di controllo, es: if, else, for, while
+3. dichiarazione delle variabili
 
-
-void controlloVariabili_v2(char* filename, Statistiche* stats){
+*/
+void check_file(char* filename, Statistiche* stats){
 	//apertura file e gestione errore
 	FILE* file = fopen(filename, "r");
 	if (!file){
@@ -752,8 +789,12 @@ void controlloVariabili_v2(char* filename, Statistiche* stats){
 		//rimpiazza \n con \0
 		riga[strcspn(riga, "\n")] = '\0';
 
+		//elimina i commenti 
+
 		//rimuovi spazi dx e sx, elimina commenti inline del tipi "int a = 0; //commento"
+		rimuoviCommentoInline(riga);
 		char* clean = eliminaSpaziDxSx_v2(riga);
+		
 
 		//salta righe vuote
 		if (strlen(clean) == 0){
@@ -826,6 +867,7 @@ void controlloVariabili_v2(char* filename, Statistiche* stats){
 
 			//altri controlli andranno qui
 			//todo: andrebbero controllati anche le righe in cui si ha 'return'
+
 			free(pulito);
 		}
 
