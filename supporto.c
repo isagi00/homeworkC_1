@@ -172,6 +172,29 @@ void rimuoviCommentoInline(char* str){
 	return;
 }
 
+/*
+conta il numero di righe del file
+*/
+int contaRigheFile(const char* filename){
+	if (!filename) return -1;
+	FILE* file = fopen(filename, "r");
+	if(!file){
+		printf("[contaRigheFile] errore apertura file");
+		return -1;
+	}
+
+	int righe = 0;
+	char buffer[1024];
+	while(fgets(buffer, sizeof(buffer), file) != NULL){
+		righe++;
+	}
+
+	fclose(file);
+	return righe;
+}
+
+
+
 /*controlla se la riga attuale è un #include valido o non.
 restituisce true se è valido.
 str: stringa in input
@@ -195,6 +218,7 @@ bool controllaRigaInclude(char *str){
 	}
 	return false;
 }
+
 /*
 controlla se la riga attuale è una riga vuota (con solo \n).
 restituisce true se è vuoto.

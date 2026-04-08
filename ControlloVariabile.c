@@ -783,24 +783,39 @@ void check_file(char* filename, Statistiche* stats){
 	int n_riga = 1;
 	int n_graffe = 0;
 	bool main_dichiarato = false;
+	bool in_commento_multiplo = false;
 
 	//scorre le righe del file
 	while (fgets(riga, sizeof(riga), file) != NULL){
 		//rimpiazza \n con \0
 		riga[strcspn(riga, "\n")] = '\0';
 
-		//elimina i commenti 
+		//salta commenti se stiamo in un commento multilinea
+		if(in_commento_multiplo){
+			if (strstr(riga, "*/") != NULL){	//se è stato chiuso il commento resetta flag
+				in_commento_multiplo = false;
+			}
+			n_riga++;	
+			continue;	//salta riga corrente
+		}
 
 		//rimuovi spazi dx e sx, elimina commenti inline del tipi "int a = 0; //commento"
 		rimuoviCommentoInline(riga);
 		char* clean = eliminaSpaziDxSx_v2(riga);
 		
-
 		//salta righe vuote
 		if (strlen(clean) == 0){
 			n_riga ++;
 			continue;
 		}
+
+		//salta le righe dopo  commenti del tipo ' /* .... */ '
+		if (strlen(clean) >= 2 && clean[0] == '/' && clean[1] == '*' ){
+			in_commento_multiplo = true;
+			n_riga++;
+			continue; 	//salta la riga corrente
+		}
+		
 
 		//split su '{' '}' e ';', controllo split vuoto.
 		//tokens ha: "int test = 0", "char hello, ...", array di stringhe.

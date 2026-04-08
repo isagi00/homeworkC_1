@@ -19,6 +19,7 @@ bool controllaRigaVuota(char *str);
 char *pulisciNomeVariabile(char *token);
 void compatta_stringa(char* dest, const char* src);
 void rimuoviCommentoInline(char* str);
+int contaRigheFile(const char* filename);
 
 
 
