@@ -403,7 +403,7 @@ bool controlloCorrettezzaVariabile(char* valore,char* tipo){
         }
         return false;
     }
-	free(valore);
+	// free(valore);
     return true;
 }
 
@@ -509,21 +509,22 @@ char* controlloVariabile(char* filename, Statistiche *stats){
     FILE *file = fopen(filename, "r");
 	//gestione errore apertura file
     if(file == NULL){
-        printf("[ControlloVariabile] errore apertura file\n");
+        printf("[ControlloVariabile] errore apertura file: %s\n", filename);
         return NULL;
     }
 
 	//inizializzazione var utili
-    char riga[128];
+    char riga[1024];
     int numero_pv, numero_s;
     int numeroRiga = 1;	//riga corrente
     bool esisteMain = false;
+	int num_graffe = 0;
 
 	//ciclo principale 
     while(fgets(riga, sizeof(riga), file) != NULL){
         riga[strcspn(riga, "\n")] = '\0';
 
-        char *rigaPul = rimuoviSpaziSx(riga);
+        char *rigaPul = eliminaSpaziDxSx_v2(riga);
         char **parole_split_pv = split(rigaPul, "{};", &numero_pv);
 		//stampaParoleSplit(parole_split_pv,numero_pv);
 
@@ -670,6 +671,184 @@ char* controlloVariabile(char* filename, Statistiche *stats){
 	return NULL;
 }
 
+/*
+controlla se la dichiarazione di if/else/while/for sia corretta
+token deve non avere spazi a sx.
+- token: stringha in forma "if (zh给)..."
+*/
+bool controllaStrutturaControllo(char* token, int riga, Statistiche* stats){
+	if (!token) return false;
+
+	const char* kw_controllo[] = {"if", "else", "for", "while", NULL};
+	bool kw_valido = false;
+	const char* kw_trovata = NULL;
+	
+	//controllo dichiarazione corretta kw
+	char* copia_token = strdup(token);
+	int n_str;
+	char** stringhe = split(copia_token, " {(",&n_str);	//splitta su 'if() -> if\0)', else{} -> else\0}, if (...) -> if\0(...)
+	if (n_str == 0){
+		free(stringhe);
+		free(copia_token);
+		return false;
+	}
+	char* kw = stringhe[0];
+	for(int i = 0; kw_controllo[i] != NULL; i++){
+		if (strcmp(kw, kw_controllo[i])== 0){
+			kw_valido = true;
+			kw_trovata = kw_controllo[i];
+			break;
+		}
+	}
+	//pulizia se kw non valido
+	if (!kw_valido){
+		free(copia_token);
+		return false;
+	} 
+
+	//se kw è else, ritorna true
+	if(strcmp(kw_trovata,"else") == 0){
+		free(copia_token);
+		return true;
+	}
+
+
+
+	//cerca le parentesi tonde e verifica se è corretto
+	char* paren_aperta = strchr(token, '(');
+	char* paren_chiusa = strchr(token, ')');
+	bool ok_parentesi = (paren_aperta && paren_chiusa && paren_aperta < paren_chiusa);
+	if(!ok_parentesi){
+		printf("[ControlloVariabile] ERRORE: '%s' senza parentesi valide alla riga %i\n", kw_trovata, riga);
+		stats->errori_rilevati++;
+		return false;
+	}
+	else{
+		printf("[ControlloVariabile] struttura '%s' valida alla riga %i\n", kw_trovata, riga);
+	}
+
+	free(copia_token);
+	return ok_parentesi;
+}	
+
+
+
+void controlloVariabili_v2(char* filename, Statistiche* stats){
+	//apertura file e gestione errore
+	FILE* file = fopen(filename, "r");
+	if (!file){
+		printf("[ControlloVariabile] errore apertura file: %s\n", filename);
+		return;
+	}
+
+	//init variabili utili
+	char riga[1024];
+	int n_riga = 1;
+	int n_graffe = 0;
+	bool main_dichiarato = false;
+
+	//scorre le righe del file
+	while (fgets(riga, sizeof(riga), file) != NULL){
+		//rimpiazza \n con \0
+		riga[strcspn(riga, "\n")] = '\0';
+
+		//rimuovi spazi dx e sx, elimina commenti inline del tipi "int a = 0; //commento"
+		char* clean = eliminaSpaziDxSx_v2(riga);
+
+		//salta righe vuote
+		if (strlen(clean) == 0){
+			n_riga ++;
+			continue;
+		}
+
+		//split su '{' '}' e ';', controllo split vuoto.
+		//tokens ha: "int test = 0", "char hello, ...", array di stringhe.
+		int n_tokens;
+		char** tokens = split(clean, "{};", &n_tokens);
+		if(!tokens || n_tokens == 0){
+			free(clean);
+			free(tokens);
+			n_riga++;
+			continue;
+		}
+
+		//salta commenti e include
+		if(controllaRigaCommento(tokens[0]) || controllaRigaInclude(tokens[0])){
+			n_riga ++;
+			continue;
+		}
+		//todo:caso in cui si hanno commenti /* */
+
+
+		//processa ogni token
+		for(int i = 0; i < n_tokens; i++){
+			// un token è del tipo: "int test = 0"
+			char* token = tokens[i];
+			if(!token) continue;
+			char* pulito = eliminaSpaziDxSx_v2(token);
+			if (!pulito) continue;
+
+			//conta graffe nel token non pulito
+			for(int k = 0; k < strlen(token); k++){
+				if (token[k] == '{') n_graffe++;
+				else if(token[k] == '}') n_graffe--;
+			}
+
+			//controllo dichiarazione main() e gestione main() duplicato
+			if (!main_dichiarato && isMain(pulito)){
+				printf("[ControlloVariabile] dichiarazione main() corretta alla riga: %i\n", n_riga);
+				main_dichiarato = true;
+				free(pulito);
+				continue;
+			}
+			else if(main_dichiarato && isMain(pulito)){
+				stats -> errori_rilevati++;
+				printf("[ControlloVariabile] dichiarato un altro main alla riga: %i\n", n_riga);
+				free(pulito);
+				continue;
+			}
+
+			//controllo della dichiarazione if/else/for/while
+			if(controllaStrutturaControllo(pulito, n_riga, stats)){
+				free(pulito);
+				continue;
+			}
+
+			//controllo dichiarazione delle variabili
+			if(controllaDichiarazioneVariabile(pulito)){
+				stats->variabili_controllate++;	//conta solo dichiarazione valida di var
+				printf("[ControlloVariabile] variabile valida '%s' alla riga %i\n", pulito, n_riga);
+			}
+			else{
+				stats->errori_rilevati++; //errori contati separatamente
+				printf("[ControlloVariabile] variabile non valida '%s' alla riga %i\n", pulito, n_riga);
+			}
+
+			//altri controlli andranno qui
+			//todo: andrebbero controllati anche le righe in cui si ha 'return'
+			free(pulito);
+		}
+
+		free(tokens);
+		free(clean);
+		n_riga++;
+	}
+
+	fclose(file);
+
+	//controlla che il numero delle graffe sia corretto
+	if (n_graffe != 0) {
+		printf("[ControlloVariabile] ATTENZIONE: parentesi graffe non bilanciate (differenza: %i)\n", n_graffe);
+		stats->errori_rilevati++;
+	}
+	
+	if(!main_dichiarato){
+		printf("[ControlloVariabile] ATTENZIONE: manca la dichiarazione del main()\n");
+		stats->errori_rilevati++;
+	}
+
+	return;
+}
 
 //funziona ritorna una lista di tutte le variabili dichiarate.
 //setta flag di ogni variabile se è stata utilizzata o non.

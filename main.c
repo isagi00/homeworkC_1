@@ -75,7 +75,8 @@ int main(int argc, char *argv[]){
     Statistiche stats = {0};    //inizializza tutto a 0
 
     //controllo variabili
-    controlloVariabile(nome_file_input, &stats);
+    // controlloVariabile(nome_file_input, &stats);
+    controlloVariabili_v2(nome_file_input,&stats);
 
     //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
     List *var_inutilizzate = controllaUtilizzoVariabili(nome_file_input, &stats);
