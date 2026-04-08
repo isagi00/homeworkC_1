@@ -11,7 +11,8 @@
 char** split(char* separaS,char* separatore, int *numeroP);
 char** split_variabile(char* str, int *numero);
 char* eliminaSpaziDxSx(char* str);
-char *rimuoviSpaziSx(char *str);
+char* eliminaSpaziDxSx_v2(char* str);
+char* rimuoviSpaziSx(char* str);
 bool controllaRigaCommento(char *str);
 bool controllaRigaInclude(char *str);
 bool controllaRigaVuota(char *str);

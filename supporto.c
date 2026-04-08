@@ -31,6 +31,8 @@ ritorna la stringa con spazi eliminati.
 es: "hello world"
 */
 char* eliminaSpaziDxSx(char* str){
+	if (!str) return NULL;
+
     int n = strlen(str);
 	//elimina spazi dx
     for(int i = 1; i < n; i++){
@@ -45,6 +47,34 @@ char* eliminaSpaziDxSx(char* str){
         str++;
     }
     return str;
+}
+
+/*
+ritorna una copia della stringa con spazi sx e dx rimossi.
+da fare free() al termine dell'utilizzo
+*/
+char* eliminaSpaziDxSx_v2(char* str){
+	if (!str) return NULL;
+	//gestione stringa vuota
+	int len = strlen(str);
+	if (len== 0) return strdup("");
+
+	//scorre spazi a sx
+	int inizio = 0;	
+	while (str[inizio] == ' ' || str[inizio] == '\t') inizio ++;
+
+	//se stringa tutti spazi ritorna ""
+	if (inizio == len) return strdup("");
+
+	//scorre spazi a dx
+	int fine = strlen(str) - 1; // -1 per non partire dal '\0'
+	while (fine > inizio && (str[fine] == ' ' || str[fine] == '\t')) fine --;
+
+	//copia della stringa
+	int lenstr = fine - inizio + 1;
+	char* pulito = strndup(str + inizio, lenstr);
+
+	return pulito;
 }
 
 

@@ -505,6 +505,7 @@ bool isMain(char* riga) {
 
 //controlla il tipo delle variabili
 char* controlloVariabile(char* filename, Statistiche *stats){
+	//apertura file .c
     FILE *file = fopen(filename, "r");
 	//gestione errore apertura file
     if(file == NULL){
@@ -512,11 +513,13 @@ char* controlloVariabile(char* filename, Statistiche *stats){
         return NULL;
     }
 
+	//inizializzazione var utili
     char riga[128];
     int numero_pv, numero_s;
     int numeroRiga = 1;	//riga corrente
     bool esisteMain = false;
 
+	//ciclo principale 
     while(fgets(riga, sizeof(riga), file) != NULL){
         riga[strcspn(riga, "\n")] = '\0';
 
@@ -657,6 +660,7 @@ char* controlloVariabile(char* filename, Statistiche *stats){
             }*/
 
             //free(parole_split_s);
+			free(cp1);
         }
         numeroRiga++;
         free(parole_split_pv);
