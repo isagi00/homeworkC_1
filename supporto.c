@@ -266,6 +266,21 @@ void compatta_stringa(char* dest, const char* src){
 }
 
 
+/*TODO: deve controllare che il tipo di ritorno o è 
+return;
+return 10;
+return b; -> controlla che b sia una var con tipo int.
+*/
+// bool controllaReturnValido(char* str){
+// 	if (!str) return false;
+
+// 	int n_parti;
+// 	char** tokens = split(str, " \t", n_parti);
+// 	if (!tokens) return false;
+// 	if (strcmp(tokens[0], "return") == 0){
+// 		for (int i = 0; i < strlen[])
+// 	}
+// }
 
 
 
@@ -377,6 +392,7 @@ void list_free(List* list){
 //variabile
 
 typedef struct {
+	char* tipo;	//tipo della var
 	char* nome; 	//nome della variabile
 	int riga_dichiarata; 	//riga in cui è stata dichiarata la variabile
 	bool usata; 	//flag, true se la variabile è stata usata	

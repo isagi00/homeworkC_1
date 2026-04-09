@@ -76,27 +76,28 @@ int main(int argc, char *argv[]){
 
     //controllo variabili
     // controlloVariabile(nome_file_input, &stats);
-    check_file(nome_file_input,&stats);
 
     //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
-    List *var_inutilizzate = controllaUtilizzoVariabili(nome_file_input, &stats);
+    List *variabili = controllaUtilizzoVariabili(nome_file_input, &stats);
+
+    check_file(nome_file_input,&stats, variabili);
 
     
 
 
     if (opzione_output == true && opzione_verbose == true){
-        salva_statistiche_file_esterno(nome_file_output, &stats, var_inutilizzate);
-        stampa_statistiche_su_terminale(&stats, var_inutilizzate);
+        salva_statistiche_file_esterno(nome_file_output, &stats, variabili);
+        stampa_statistiche_su_terminale(&stats, variabili);
         printf("===========================[termine analisi]===========================\n");
         return 0;
     }
     else if (opzione_output == true && opzione_verbose == false){
-        salva_statistiche_file_esterno(nome_file_output, &stats, var_inutilizzate);
+        salva_statistiche_file_esterno(nome_file_output, &stats, variabili);
         printf("===========================[termine analisi]===========================\n");
         return 0;
     }
     else if (opzione_output == false){   //senza -o, --out: stampa su terminale di default
-        stampa_statistiche_su_terminale(&stats, var_inutilizzate);
+        stampa_statistiche_su_terminale(&stats, variabili);
         printf("===========================[termine analisi]===========================\n");
         return 0;
     }

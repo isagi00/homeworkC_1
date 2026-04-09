@@ -9,7 +9,7 @@ la funzione controlla la correttezza di:
 */
 int main(int argc, char* argv[]){
     int a;  //commento inline
-    int b;
+    int b; int bastardo=10;
     if(a + b < 10){
         return 1;
     }

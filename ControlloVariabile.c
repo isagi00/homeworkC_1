@@ -770,7 +770,7 @@ la funzione controlla la correttezza di:
 3. dichiarazione delle variabili
 
 */
-void check_file(char* filename, Statistiche* stats){
+void check_file(char* filename, Statistiche* stats, List* variabili){
 	//apertura file e gestione errore
 	FILE* file = fopen(filename, "r");
 	if (!file){
@@ -784,6 +784,7 @@ void check_file(char* filename, Statistiche* stats){
 	int n_graffe = 0;
 	bool main_dichiarato = false;
 	bool in_commento_multiplo = false;
+	List* var_dichiarate = list_create();
 
 	//scorre le righe del file
 	while (fgets(riga, sizeof(riga), file) != NULL){
@@ -815,6 +816,13 @@ void check_file(char* filename, Statistiche* stats){
 			n_riga++;
 			continue; 	//salta la riga corrente
 		}
+
+		//conta graffe della riga
+		for(int k = 0; k < strlen(clean); k++){
+			if (clean[k] == '{') n_graffe++;
+			else if(clean[k] == '}') n_graffe--;
+		}
+
 		
 
 		//split su '{' '}' e ';', controllo split vuoto.
@@ -833,7 +841,6 @@ void check_file(char* filename, Statistiche* stats){
 			n_riga ++;
 			continue;
 		}
-		//todo:caso in cui si hanno commenti /* */
 
 
 		//processa ogni token
@@ -844,12 +851,7 @@ void check_file(char* filename, Statistiche* stats){
 			char* pulito = eliminaSpaziDxSx_v2(token);
 			if (!pulito) continue;
 
-			//conta graffe nel token non pulito
-			for(int k = 0; k < strlen(token); k++){
-				if (token[k] == '{') n_graffe++;
-				else if(token[k] == '}') n_graffe--;
-			}
-
+		
 			//controllo dichiarazione main() e gestione main() duplicato
 			if (!main_dichiarato && isMain(pulito)){
 				printf("[ControlloVariabile] dichiarazione main() corretta alla riga: %i\n", n_riga);
@@ -864,6 +866,25 @@ void check_file(char* filename, Statistiche* stats){
 				continue;
 			}
 
+			//TODO: controllo del return. nota: non controlla che il tipo di ritorno sia corretto
+			//traccia la tipologia della variabile dichiarata in Var. il return ha 3 casi:
+			//1. return; valido
+			//2. return 10; valido
+			//3. int b= 10;
+			//	 return b; deve essere valido
+
+			// if(strncmp(pulito, "return", 6)){
+			// 	if (!main_dichiarato){
+			// 		printf("[ControlloVariabile] return fuori dal main alla riga %i \n", n_riga);
+			// 		stats->errori_rilevati++;
+			// 	}
+			// 	else if (controllaReturnValido()){
+			// 		printf("[ControlloVariabile] return ok alla riga: %i \n", n_riga);
+			// 	}
+			// 	free(pulito);
+			// 	continue;
+			// }
+
 			//controllo della dichiarazione if/else/for/while
 			if(controllaStrutturaControllo(pulito, n_riga, stats)){
 				free(pulito);
@@ -872,6 +893,7 @@ void check_file(char* filename, Statistiche* stats){
 
 			//controllo dichiarazione delle variabili
 			if(controllaDichiarazioneVariabile(pulito)){
+				// Variabile
 				stats->variabili_controllate++;	//conta solo dichiarazione valida di var
 				printf("[ControlloVariabile] variabile valida '%s' alla riga %i\n", pulito, n_riga);
 			}
@@ -980,12 +1002,13 @@ List* controllaUtilizzoVariabili(char *nome_file_in, Statistiche *stats){
 					//filtra puntatori, array, main
 					if(candidato[0] != '*' && candidato[0] != '[' && strcmp(candidato, "main") != 0 && isalpha(candidato[0])){
 						Variabile* var = malloc(sizeof(Variabile));
+						var->tipo = strdup(tipi_base[t]);
 						var->nome = strdup(candidato);
 						var->riga_dichiarata = riga_attuale;
 						var->usata = false;
 
 						list_append(variabili, var);
-						printf("[ControllaVarInutilizzate] dichiarata '%s' alla riga %d\n", var->nome, var->riga_dichiarata);
+						printf("[ControllaVarInutilizzate] dichiarata '%s' alla riga %d con tipo '%s': \n", var->nome, var->riga_dichiarata, var->tipo);
 					}
 					break; //una dichiarazione alla volta
 				}

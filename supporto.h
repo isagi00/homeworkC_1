@@ -39,6 +39,7 @@ void* list_get(List* list, size_t indice);
 void list_free(List* list);
 
 typedef struct {
+	char* tipo;
 	char* nome; 	//nome della variabile
 	int riga_dichiarata; 	//riga in cui è stata dichiarata la variabile
 	bool usata; 	//flag, true se la variabile è stata usata	
