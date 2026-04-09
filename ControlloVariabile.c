@@ -873,17 +873,21 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			//3. int b= 10;
 			//	 return b; deve essere valido
 
-			// if(strncmp(pulito, "return", 6)){
-			// 	if (!main_dichiarato){
-			// 		printf("[ControlloVariabile] return fuori dal main alla riga %i \n", n_riga);
-			// 		stats->errori_rilevati++;
-			// 	}
-			// 	else if (controllaReturnValido()){
-			// 		printf("[ControlloVariabile] return ok alla riga: %i \n", n_riga);
-			// 	}
-			// 	free(pulito);
-			// 	continue;
-			// }
+			if(strncmp(pulito, "return", 6) == 0){
+				// printf("[ControlloVariabile] attualmente nel controllo del return, pulito = '%s' \n", pulito);
+				if (!main_dichiarato){
+					printf("[ControlloVariabile] return fuori dal main alla riga %i \n", n_riga);
+					stats->errori_rilevati++;
+				}
+				else if (controllaReturnValido(pulito, variabili)){
+					printf("[ControlloVariabile] return ok alla riga: %i \n", n_riga);
+				}
+				else{
+					printf("[ControlloVariabile] return non valido alla riga: %i \n", n_riga);
+				}
+				free(pulito);
+				continue;
+			}
 
 			//controllo della dichiarazione if/else/for/while
 			if(controllaStrutturaControllo(pulito, n_riga, stats)){

@@ -13,6 +13,10 @@ int main(int argc, char* argv[]){
     if(a + b < 10){
         return 1;
     }
+
+    if (b >100){
+        return b + a;
+    }
     /*
 la funzione controlla la correttezza di:
 1. dichiarazione del main + argomenti
@@ -20,5 +24,5 @@ la funzione controlla la correttezza di:
 3. dichiarazione delle variabili
 
 */
-    return 0;
+    return;
 }

@@ -266,21 +266,6 @@ void compatta_stringa(char* dest, const char* src){
 }
 
 
-/*TODO: deve controllare che il tipo di ritorno o è 
-return;
-return 10;
-return b; -> controlla che b sia una var con tipo int.
-*/
-// bool controllaReturnValido(char* str){
-// 	if (!str) return false;
-
-// 	int n_parti;
-// 	char** tokens = split(str, " \t", n_parti);
-// 	if (!tokens) return false;
-// 	if (strcmp(tokens[0], "return") == 0){
-// 		for (int i = 0; i < strlen[])
-// 	}
-// }
 
 
 
@@ -479,3 +464,58 @@ void stampa_statistiche_su_terminale(Statistiche *stats, List *var_inutilizzate)
 	return;
 }
 
+
+
+
+/*TODO: deve controllare che il tipo di ritorno o è 
+return;
+return 10;
+return b; -> controlla che b sia una var con tipo int.
+*/
+bool controllaReturnValido(char* str, List* variabili){
+	if (!str) return false;
+	if (!variabili) return false;
+
+	// printf("controllo return su: '%s'\n", str);
+	//splitta su spazi
+	int n_parti;
+	char** tokens = split(str, " \t;", &n_parti);
+	if (!tokens) return false;
+	
+	//controlla il tipo di ritorno
+	//caso: 'return;'
+	if(n_parti == 1){
+		if (strcmp(tokens[0], "return") == 0){
+			free(tokens);
+			return true;
+		} 
+	}
+	//casi: 'return b' dove b è un 'int' oppure 'return 10'
+	else if (n_parti == 2 && strcmp(tokens[0], "return") == 0){
+		//caso: 'return b'
+		//controlla se la variabile sia dichiarata in precedenza, e che il tipo sia un 'int'
+		bool risultato = false;
+		for (int j = 0; j < variabili->numero_elementi_attuali; j++){
+			Variabile* var = list_get(variabili, j);
+			if (strcmp(tokens[1], var->nome) == 0 && strcmp(var->tipo, "int") == 0){
+				risultato = true;
+				break;
+			}
+		}
+		//caso: 'return 10'
+		if(!risultato){
+			for (int i = 0; i < strlen(tokens[1]); i++){
+				if (!isdigit(tokens[1][i])){
+					risultato = false;
+					break;
+				} 
+				risultato = true;	//se loop finisce senza break, è valido
+			}
+		}
+		
+		free(tokens);
+		return risultato;
+	}
+	//TODO: gestire casi in cui 'return a+b' dove a e b devono essere int.
+	return false;
+}

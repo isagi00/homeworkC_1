@@ -58,5 +58,8 @@ int conta_var_inutilizzate(List *vars);
 void salva_statistiche_file_esterno(char *nome_file_output, Statistiche *stats, List *var_inutilizzate);
 void stampa_statistiche_su_terminale(Statistiche *stats, List *var_inutilizzate);
 
+
+bool controllaReturnValido(char* str, List* variabili);
+
 #endif
 //fine include guard
