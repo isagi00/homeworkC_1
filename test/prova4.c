@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
     }
 
     if (b >100){
-        return b + a;
+        return b +      -     +    +  -10 + a + c;
     }
     /*
 la funzione controlla la correttezza di:

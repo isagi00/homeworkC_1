@@ -60,6 +60,8 @@ void stampa_statistiche_su_terminale(Statistiche *stats, List *var_inutilizzate)
 
 
 bool controllaReturnValido(char* str, List* variabili);
+bool isInteroValido(char* token);
+bool isVariabileIntDichiarata(char* token, List* variabili);
 
 #endif
 //fine include guard

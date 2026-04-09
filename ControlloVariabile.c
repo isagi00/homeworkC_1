@@ -784,7 +784,6 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 	int n_graffe = 0;
 	bool main_dichiarato = false;
 	bool in_commento_multiplo = false;
-	List* var_dichiarate = list_create();
 
 	//scorre le righe del file
 	while (fgets(riga, sizeof(riga), file) != NULL){
@@ -866,13 +865,7 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 				continue;
 			}
 
-			//TODO: controllo del return. nota: non controlla che il tipo di ritorno sia corretto
-			//traccia la tipologia della variabile dichiarata in Var. il return ha 3 casi:
-			//1. return; valido
-			//2. return 10; valido
-			//3. int b= 10;
-			//	 return b; deve essere valido
-
+			//controlla se la dichiarazione del return è valido
 			if(strncmp(pulito, "return", 6) == 0){
 				// printf("[ControlloVariabile] attualmente nel controllo del return, pulito = '%s' \n", pulito);
 				if (!main_dichiarato){
@@ -895,6 +888,9 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 				continue;
 			}
 
+			//controllo assegnazione, es: 'a = b + 10;'
+			// if (isAssegnazioneValida(pulito))
+
 			//controllo dichiarazione delle variabili
 			if(controllaDichiarazioneVariabile(pulito)){
 				// Variabile
@@ -907,7 +903,6 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			}
 
 			//altri controlli andranno qui
-			//todo: andrebbero controllati anche le righe in cui si ha 'return'
 
 			free(pulito);
 		}

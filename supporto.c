@@ -464,13 +464,124 @@ void stampa_statistiche_su_terminale(Statistiche *stats, List *var_inutilizzate)
 	return;
 }
 
+/**
+ * controlla se il token corrente è un intero valido
+ * token: token da controllare
+ * ritorna true se è valido.
+ */
+bool isInteroValido(char* token){
+	if (!token) return false;
+	int i=0;
+
+	//controlla se ci sta un segno '+' o '-', salta se ci sta
+	if (token[0] == '+' || token[0] == '-'){
+		i = 1;
+	}
+
+	//salta spazi e altri segni. es: '+ - +    - 420' è espressione valida....
+	while (i < strlen(token) && (isspace(token[i] || token[i] == '+' || token[i] == '-'))) i++;
+
+	//ci deve essere una cifra dopo il segno
+	if (token[i] == '\0'){
+		// printf("[isInteroValido] intero '%s' non valido \n", token);
+ 		return false;
+	}
+
+	//resto devono esere cifre
+	while (token[i]){
+		if (!isdigit(token[i])){
+			// printf("[isInteroValido] intero '%s' non valido \n", token);
+			return false;
+		}
+		i++;
+	}
+
+	return true;
+}
+
+/*
+controlla se il token corrente è una variabile di tipo int dichiarato.
+token: token da controllare
+varibili: List, con Variabile
+ritorna true se il token è una variabile int.
+*/
+bool isVariabileIntDichiarata(char* token, List* variabili){
+	if (!token || !variabili) return false;
+	char* pulito = eliminaSpaziDxSx_v2(token);
+	for (int i = 0; i < variabili->numero_elementi_attuali; i++){
+		Variabile* var = list_get(variabili,i);
+		if (var && strcmp(pulito, var->nome) == 0 && strcmp(var->tipo, "int") == 0){
+			free(pulito);
+			return true;
+		}
+	}
+	printf("[isVariabileIntDichiarata] variabile '%s' non dichiarata o di tipo non int \n", pulito);
+	free(pulito);
+	return false;
+}
+
+
+/*
+convalida se l'espressione dopo il return è valido. controlla solo se ci sono interi e variabili di tipo intero.
+espressione: stringa del tipo 'a + b + 10'
+variabili: List con Variabile al suo interno
+ritorna true se l'espressione è valida
+*/
+bool convalidaEspressioneReturn(char* espressione, List* variabili){
+	if (!espressione || !variabili) return false;
+	//espressione sarà del tipo : 'a + zhgey - 69'
+
+	int i = 0;
+	int len = strlen(espressione);
+
+	while (i < len){
+		//salta spazi
+		while (i<len && isspace(espressione[i])) i++;
+		if (i>= len) break;
+
+		//salta operatori
+		if (espressione[i] == '+' || espressione[i] == '-' || espressione[i] == '*' || 
+            espressione[i] == '/' || espressione[i] == '%' || espressione[i] == '(' || espressione[i] == ')') {
+            i++;
+            continue;
+        }
+
+		//estrai token: numero o nome var
+		int start = i;
+		while (i < len && (isalnum(espressione[i]) || espressione[i] == '_' || espressione[i] == '.')){	//il '.' per numero come '3.14'
+			i++;
+		}
+		if(start == i){ //carattere non riconosciuto
+			printf("[ConvalidaEspressioneReturn] carattere '%c' non permesso / non riconosciuto come espressione di return \n", espressione[i]);
+			return false;
+		} 
+		 
+
+		//copia token trovato
+		char copia[256];
+		int len_copia = i - start;
+		strncpy(copia, espressione + start, len_copia);
+		copia[len_copia] = '\0';
+
+		//controlla se è un numero
+		if (isInteroValido(copia)) continue;
+
+		//controlla se è una variabile int dichiarata
+		if (isVariabileIntDichiarata(copia, variabili)) continue;
+
+		return false; //token non valido.
+	}
+	return true; //se tutti i token sono validi
+}
 
 
 
-/*TODO: deve controllare che il tipo di ritorno o è 
-return;
-return 10;
-return b; -> controlla che b sia una var con tipo int.
+/*
+controlla la correttezza del return del main(). controlla casi del tipo:
+	return;
+	return 10;	
+	return b; -> controlla che b sia una var con tipo int.
+ritorna true se il return è dichiarato correttamente.
 */
 bool controllaReturnValido(char* str, List* variabili){
 	if (!str) return false;
@@ -488,7 +599,7 @@ bool controllaReturnValido(char* str, List* variabili){
 		if (strcmp(tokens[0], "return") == 0){
 			free(tokens);
 			return true;
-		} 
+		}
 	}
 	//casi: 'return b' dove b è un 'int' oppure 'return 10'
 	else if (n_parti == 2 && strcmp(tokens[0], "return") == 0){
@@ -506,16 +617,33 @@ bool controllaReturnValido(char* str, List* variabili){
 		if(!risultato){
 			for (int i = 0; i < strlen(tokens[1]); i++){
 				if (!isdigit(tokens[1][i])){
+					printf("[controllaReturnValido] espressione di return non valido: '%s' \n", tokens[1]);
 					risultato = false;
 					break;
 				} 
 				risultato = true;	//se loop finisce senza break, è valido
 			}
 		}
-		
 		free(tokens);
 		return risultato;
 	}
-	//TODO: gestire casi in cui 'return a+b' dove a e b devono essere int.
+	//casi: 'return a + b + 10 + 20 + ciao...'
+	else if (n_parti > 2 && strcmp(tokens[0], "return") == 0 ){
+		//ricostruisci espressione dopo 'return'
+		char espressione[512] = {0};
+		for (int i = 1; i < n_parti; i++){
+			strcat(espressione, tokens[i]);	//praticamente .join sui token
+			if (i < n_parti - 1) strcat(espressione, " ");	//aggiunge spazio tra i token tranne sull'ultimo
+		}	
+
+		if (convalidaEspressioneReturn(espressione, variabili)){
+			free(tokens);
+			return true;
+		} 
+	}
+	free(tokens);
+	printf("[controlloReturnValido] espressione return non valido!\n");
 	return false;
 }
+
+
