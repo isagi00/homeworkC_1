@@ -330,6 +330,22 @@ void list_append(List* lista, void* el){
 		lista->numero_elementi_attuali += 1;
 		//printf("[supporto] list_append: elemento aggiunto correttamente \n");
 	}
+	//resize se ci sono >= 10 elementi della lista. raddopia la dimensione
+	else if (lista->numero_elementi_attuali >= lista->spazio_totale_allocato){
+		size_t nuova_capacità = lista->spazio_totale_allocato * 2;
+		//ridimensiona l'array di puntatori
+		void** nuovo_array = realloc(lista->puntatore, nuova_capacità * sizeof(void*));
+		if(nuovo_array == NULL){
+			printf("[list_append] realloc fallito\n");
+			return;
+		}
+		lista->puntatore = nuovo_array;
+		lista->spazio_totale_allocato = nuova_capacità;
+		
+		//aggiungi dopo ridimensionamento
+		lista->puntatore[lista->numero_elementi_attuali] = el;
+		lista->numero_elementi_attuali += 1;
+	}
 	else{
 		printf("[supporto] list_append: lista piena\n");
 		return;
@@ -583,6 +599,7 @@ controlla la correttezza del return del main(). controlla casi del tipo:
 	return;
 	return 10;	
 	return b; -> controlla che b sia una var con tipo int.
+	return a + b + 10 - 420 ...
 ritorna true se il return è dichiarato correttamente.
 */
 bool controllaReturnValido(char* str, List* variabili){
