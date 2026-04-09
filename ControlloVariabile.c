@@ -355,6 +355,7 @@ controlla se il valore assegnato alla variabile è valido o non.
 ritorna true se il valore assegnato è valido
 */
 bool controlloValoreAssegnato(char* valore,char* tipo){
+	// printf("[controlloValoreAssegnato] valore : '%s'\n", valore);
 	//char
 	if(strcmp(tipo,"char")==0){      
         
@@ -366,11 +367,20 @@ bool controlloValoreAssegnato(char* valore,char* tipo){
 	//int, long, short
 	else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 
 
-        for(int i = 1; i <strlen(valore); i++){
-	
-            if( !(isalnum(valore[i]) ||valore[i]=='+'||valore[i]=='-'||valore[i]==' '|| valore[i]=='\t') ){
-                return false;
-            }
+        for(int i = 0; i <strlen(valore); i++){
+			if(i== 0 && valore[i] == '"') return false;	//se inizia con " sicuramente è stringa, salta
+			if(i == 0 && (valore[i] == '+' || valore[i] == '-')) continue; // segno ok
+       	 	if(valore[i] == ' ' || valore[i] == '\t') continue;	//salta spazi
+			/*
+			l'assegnazione 'a = b + c' deve ritornare corretto, se b e c sono variabili interi. 
+			altrimenti ritornerebbe false scorrettaemnte
+			*/
+       		// if(!digit(valore[i])) return false;	//non è numero
+       		// if(isalpha(valore[i])) return false; // no lettere, solo cifre
+
+            // if( !(isalnum(valore[i]) ||valore[i]=='+'||valore[i]=='-'||valore[i]==' '|| valore[i]=='\t') ){
+            //     return false;
+            // }
         }
         return true;
     }
@@ -400,9 +410,12 @@ bool controlloValoreAssegnato(char* valore,char* tipo){
         	else if(!isdigit(valore[i])){
             	return false;
         	}
+			//tutto ok ritorna true
+			return true;
     	}
 	//bool
-	}else if(strcmp(tipo,"bool")==0){     
+	}
+	else if(strcmp(tipo,"bool")==0){     
         if(strcmp(valore,"true")==0  || strcmp(valore,"false")==0 || strcmp(valore,"1")==0 || strcmp(valore,"0")==0){
             return true;
         }
@@ -979,6 +992,7 @@ List* controllaUtilizzoVariabili(char *nome_file_in, Statistiche *stats){
 		riga_attuale ++;
 		//pulizia riga
 		riga[strcspn(riga, "\n")] = '\0';	//rimuove \n
+		rimuoviCommentoInline(riga);
 		char *riga_pulita = rimuoviSpaziSx(riga);
 
 		//se la riga corrente è commento o #include o vuota, salta.

@@ -99,6 +99,7 @@ char** split_variabile(char* str, int *numero){
     token = strtok(NULL, "");
 	if(token != NULL){
 		vettore[i] = eliminaSpaziDxSx(token);
+		i++;
 	}
 
     *numero = i;
@@ -159,7 +160,7 @@ void rimuoviCommentoInline(char* str){
 			start = j;
 		}
 		else if (str[j] == '*' && str[j+1] == '/'){
-			end = j;
+			end = j + 1;
 			break;	//termina dopo averlo trovato
 		}
 	}
