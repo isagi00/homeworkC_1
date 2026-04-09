@@ -6,6 +6,9 @@
 #ifndef SUPPORTO_H
 #define SUPPORTO_H
 
+//array utili
+extern const char* tipi_base[];
+
 
 //funzioni di supporto
 char** split(char* separaS,char* separatore, int *numeroP);
@@ -62,6 +65,8 @@ void stampa_statistiche_su_terminale(Statistiche *stats, List *var_inutilizzate)
 bool controllaReturnValido(char* str, List* variabili);
 bool isInteroValido(char* token);
 bool isVariabileIntDichiarata(char* token, List* variabili);
+
+bool isAssegnazioneValida(char* str, List* variabili);
 
 #endif
 //fine include guard

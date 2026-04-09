@@ -6,7 +6,7 @@
 #include "supporto.h"
 
 
-const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
+// const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
 const char* keywords[] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do",
     "double", "else", "enum", "extern", "float", "for", "goto", "if",
@@ -741,6 +741,7 @@ bool controllaStrutturaControllo(char* token, int riga, Statistiche* stats){
 	//se kw è else, ritorna true
 	if(strcmp(kw_trovata,"else") == 0){
 		free(copia_token);
+		printf("[ControlloVariabile] struttura '%s' valida alla riga %i\n", kw_trovata, riga);
 		return true;
 	}
 
@@ -822,6 +823,20 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			else if(clean[k] == '}') n_graffe--;
 		}
 
+		//controlla for e while, prima dello split su '{};'.
+		//altrimenti esplode su 'for(int i=0; i< qualcosa; i++){...}'
+		if (strncmp(clean, "for", 3) == 0){
+			if(controllaStrutturaControllo(clean, n_riga, stats)){
+				//se valido salta
+			}
+			else{
+				stats->errori_rilevati++;
+			}
+			free(clean);
+			n_riga++;
+			continue;
+		}
+
 		
 
 		//split su '{' '}' e ';', controllo split vuoto.
@@ -889,7 +904,16 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			}
 
 			//controllo assegnazione, es: 'a = b + 10;'
-			// if (isAssegnazioneValida(pulito))
+			if (isAssegnazioneValida(pulito, variabili)){
+				printf("[ControlloVariabile] assegnazione valida alla riga: %i \n", n_riga);
+				free(pulito);
+ 				continue;
+			}
+			// else{
+			// 	printf("[ControlloVariabile] assegnazione non valida alla riga: %i \n", n_riga);
+			// 	free(pulito);
+			// 	continue;
+			// }
 
 			//controllo dichiarazione delle variabili
 			if(controllaDichiarazioneVariabile(pulito)){

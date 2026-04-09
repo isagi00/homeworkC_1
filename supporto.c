@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <ctype.h>
 
+const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
+
 /*funzione splitta str in un array di token.
 str: stringa in input. es: ("hello world")
 separatore: caratteri su cui splittare. es: (" \t;")
@@ -646,4 +648,45 @@ bool controllaReturnValido(char* str, List* variabili){
 	return false;
 }
 
+bool isAssegnazioneValida(char* str, List* variabili){
+	char* copia_str = strdup(str);
+	//controlla se il primo token è un tipo base
+	char* primo_token = NULL;
+	int n_token;
+	char** tokens = split(copia_str, " \t", &n_token);
+	if (n_token > 0) primo_token = strdup(tokens[0]);
+	free(tokens);
+
+	bool inizia_con_tipo = false;
+	for(int i = 0; tipi_base[i] != NULL; i++){
+		if (strcmp(primo_token, tipi_base[i]) == 0){
+			inizia_con_tipo = true;
+			return false;
+		}
+	}
+	free(primo_token);
+
+	//se non inizia con il tipo controlla se è un assegnamento valido
+	//quindi ad esempio: 'a = b + c'
+	if (!inizia_con_tipo){
+		//trova il nome della var assegnata
+		char* copia_str2 = strdup(str);
+		char* nome_candidato = NULL;
+		int n_token2;
+		char** tokens2 = split(copia_str2, " \t=", &n_token2);
+
+		if(n_token2 > 0) nome_candidato = strdup(tokens2[0]);
+		free(tokens2);
+
+		//check se candidato è già stato dichiarato
+		for(int j = 0; j < variabili->numero_elementi_attuali; j++){
+			Variabile* var = list_get(variabili, j);
+			if (strcmp(nome_candidato, var->nome) == 0){
+				return true;
+			}
+		}
+		free(nome_candidato);
+	}
+	return false;
+}
 
