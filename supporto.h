@@ -23,7 +23,7 @@ char *pulisciNomeVariabile(char *token);
 void compatta_stringa(char* dest, const char* src);
 void rimuoviCommentoInline(char* str);
 int contaRigheFile(const char* filename);
-
+_Bool ricerca(char* str, char* str_da_ricercare);
 
 
 

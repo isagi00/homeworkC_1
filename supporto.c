@@ -79,34 +79,46 @@ char* eliminaSpaziDxSx_v2(char* str){
 	return pulito;
 }
 
-
-char** split_variabile(char* str, int *numero){
-	char **vettore = malloc(64*sizeof(char*));
+//strtok hen nb bi genshin nb
+char** split_variabile(char* str, int *numero) {
+    char **vettore = malloc(64 * sizeof(char*));
     int i = 0;
 
-    char* token = strtok(str, " \t");
-    if(token != NULL){
+    // prima parte: tutto ciò che sta prima di "="
+    char* token = strtok(str, "=");
+    if(token != NULL) {
+        // splitta per spazi la prima parte
+        char* t = strtok(token, " \t");
+        while(t != NULL) {
+            vettore[i] = eliminaSpaziDxSx(t);
+            i++;
+            t = strtok(NULL, " \t");
+        }
+    }
+
+    // seconda parte: dopo il "="
+    token = strtok(NULL, "");
+    if(token != NULL) {
         vettore[i] = eliminaSpaziDxSx(token);
         i++;
     }
-
-    token = strtok(NULL, "=");
-    if(token != NULL){
-        vettore[i] =eliminaSpaziDxSx(token);
-        i++;
-    }
-
-    token = strtok(NULL, "");
-	if(token != NULL){
-		vettore[i] = eliminaSpaziDxSx(token);
-		i++;
-	}
 
     *numero = i;
     return vettore;
 }
 
+_Bool ricerca(char* str, char* str_da_ricercare) {
+    int len = strlen(str);
+    int len_da_ricercare = strlen(str_da_ricercare);
 
+    for(int i = 0; i < len - len_da_ricercare; i++) {
+        if(strncmp(str + i, str_da_ricercare, len_da_ricercare) == 0) {
+            return 1;
+        }
+    }
+	
+    return 0;
+}
 
 /*funzione ha come argomento un array di caratteri.
 restituisce il puntatore alla prima posizione non spazio.
