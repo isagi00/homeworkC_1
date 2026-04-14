@@ -361,16 +361,66 @@ long long x = -9000000000LL;
 long double x = 3.14159265358979323846L;
 L è opzionale
 */
+_Bool isInt(char* valore, bool isSigned){
+    int i = 0;
+    // salta il segno se c'è
+    if(valore[0] == '-' || valore[0] == '+' && isSigned) {
+        i = 1;
+    }
+	else{
+		return 0;
+	}
+    
+    // se è solo "+" o "-" 
+    if(valore[i] == '\0'){
+		return 0;
+	}
+    
+    // controlla che tutti i caratteri restanti siano cifre
+    while(valore[i] != '\0') {
+        if(!isdigit(valore[i])){
+			return 0;
+		}
+        i++;
+    }
+    
+    return 1;
+}
+
+bool isChar(char* valore, bool isSigned){
+	bool char_lettera_ok = false;
+	bool char_numero = false; 
+	bool char_numero_ok =false;
+	if(strlen(valore)<=3 && strlen(valore)>=2 && valore[0]=='\'' && valore[strlen(valore)-1]=='\''){
+		char_lettera_ok = true;
+	}
+
+    if(isInt(valore, isSigned)){
+		char_numero = true;
+	}
+
+	if(char_numero){
+		int n=(int)valore;
+		if(isSigned){
+			if(n >= -128 && n <= 127){
+				char_numero_ok = true;
+			}
+		}
+		else {
+			if(n >= 0 && n <= 255){
+				char_numero_ok = true;
+			}
+		}
+	}
+	return(char_lettera_ok || char_numero_ok);
+}
+
 bool controlloValoreAssegnato(char* valore,char* tipo){
 	static const long long a  = -9000000000LL;
 	// printf("[controlloValoreAssegnato] valore : '%s'\n", valore);
 	//char
 	if(strcmp(tipo,"char")==0){      
-        
-		if(strlen(valore)<=3 && strlen(valore)>=2 && valore[0]=='\'' && valore[strlen(valore)-1]=='\''){
-			return true;
-		}
-        return false;
+		return isChar(valore);
     }
 	//int, long, short
 	else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 
@@ -424,17 +474,81 @@ bool controlloValoreAssegnato(char* valore,char* tipo){
 	//bool
 	}
 	else if(strcmp(tipo,"bool")==0){     
-        if(strcmp(valore,"true")==0  || strcmp(valore,"false")==0 || strcmp(valore,"1")==0 || strcmp(valore,"0")==0){
-            return true;
-        }
+		// usa dirretamente funzione int
         return false;
     }
 	// free(valore);
     return true;
 }
 
+
+_Bool controllaLongShort_tre_sessione(char** parti_var) {
+    return (
+		// casi con "long" prima
+    	strcmp(parti_var[0], "long") == 0 && (
+    	// "long long a"
+    	(strcmp(parti_var[1], "long") == 0 && controllaNome(parti_var[2])) ||
+    	// "long int a"
+    	(strcmp(parti_var[1], "int") == 0 && controllaNome(parti_var[2])) ||
+    	// "long double a"
+        (strcmp(parti_var[1], "double") == 0 && controllaNome(parti_var[2]))
+    	) ||
+
+    	// "unsigned long a"
+    	(strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "long") == 0 && controllaNome(parti_var[2])) ||
+    	// "signed long a"
+		(strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "long") == 0 && controllaNome(parti_var[2])) ||
+
+    	// casi con "short" prima
+    	strcmp(parti_var[0], "short") == 0 && (
+    	// "short int a"
+        (strcmp(parti_var[1], "int") == 0 && controllaNome(parti_var[2]))) ||
+
+    	// "unsigned short a"
+    	(strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "short") == 0 && controllaNome(parti_var[2])) ||
+    	// "signed short a"
+    	(strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "short") == 0 && controllaNome(parti_var[2])) ||
+
+		// casi con char
+		(strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "char") == 0 && controllaNome(parti_var[2])) ||
+		// "signed char a"
+    	(strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "char") == 0 && controllaNome(parti_var[2]))
+	);
+}
+
+_Bool controllaLongShort_quattro_sessione(char** parti_var) {
+	return (
+        // "long long int a"
+        (strcmp(parti_var[0], "long") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "int") == 0 && controllaNome(parti_var[3])) ||
+        // "long long a" con unsigned/signed
+        (strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "long") == 0 && controllaNome(parti_var[3])) ||
+        (strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "long") == 0 && controllaNome(parti_var[3])) ||
+        // "unsigned long int a"
+        (strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "int") == 0 && controllaNome(parti_var[3])) ||
+        // "signed long int a"
+        (strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "int") == 0 && controllaNome(parti_var[3])) ||
+        // "unsigned short int a"
+        (strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "short") == 0 && strcmp(parti_var[2], "int") == 0 && controllaNome(parti_var[3])) ||
+        // "signed short int a"
+        (strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "short") == 0 && strcmp(parti_var[2], "int") == 0 && controllaNome(parti_var[3])) ||
+        // "long int a" con signed
+        (strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "int") == 0 && controllaNome(parti_var[3]))
+	);
+}
+
+//max numero di tipo dic
+_Bool controllaLongShort_cinque_sessione(char** parti_var) {
+    return (
+        // "unsigned long long int a"
+        (strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "long") == 0 && strcmp(parti_var[3], "int") == 0 && controllaNome(parti_var[4])) ||
+        // "signed long long int a"
+        (strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "long") == 0 && strcmp(parti_var[2], "long") == 0 && strcmp(parti_var[3], "int") == 0 && controllaNome(parti_var[4]))
+    );
+}
+
+
 /*controlla se la dichiarazione della variabile è valida
-accetta true per:
+true per:
 1. '[tipo] a'
 2. '[tipo] a = [valore]'
 3. '[storage] [tipo] a = [valore]'
@@ -454,49 +568,18 @@ bool controllaDichiarazioneVariabile(char* str){
 		free(copia_str);
 		return false;
 	}
-	// stampaParoleSplit(parti_var, n_parti);
-
-	// int pppp=0;
-// 	/*while (parte_variabile[pppp]!=NULL){
-// 		printf("%s\n",parte_variabile[pppp]);
-// 		pppp++;
-// 	}
-// */
 	bool risultato = false;
 	
 	//caso: "int"
 	if(n_parti<=1){
-		return false; //int 
+		risultato = false; //int 
 	}
 	//caso: "int a"
 	else if(n_parti==2){ // "int i"
-		// if(controlloTipo(parti_var[0])){
-		// 	if(controllaNome(parti_var[1])){
-		// 		return true;
-		// 	}
-		// 	else{
-		// 		return false;
-		// 	}
-		// }
-		// else{
-		// 	return false;
-		// }
 		risultato = (controlloTipo(parti_var[0]) && controllaNome(parti_var[1]));
 	}
 	//caso: "int a = 10"
 	else if(n_parti==3){	//"int i = 10"
-	// 	if(controlloTipo(parti_var[0]) && controllaNome(parti_var[1])){
-	// 		if(controlloValoreDichiaratoVar(parti_var[2],parti_var[0])){
-	// 			return true;
-	// 		}else{
-	// ////mmmmmmmmmmmmmmmmm
-	// 		}
-	// 	}
-	// 	else{
-	// 		return false;
-	// 	}
-	// }else{
-	// 	return false;
 		if (controlloTipo(parti_var[0]) && controllaNome(parti_var[1])){
 			if (controlloValoreAssegnato(parti_var[2], parti_var[0])){
 				risultato = true;
@@ -504,6 +587,32 @@ bool controllaDichiarazioneVariabile(char* str){
 			else{
 				printf("[controllaDichiarazioneVariabile] valore '%s' non valido per tipo '%s'\n", parti_var[2],parti_var[0]);
 			}
+		}
+		else if(controllaLongShort_tre_sessione(parti_var))
+    	{
+			printf("ppppppppppppppppppppppppppppppppppp\n");
+			risultato=true;
+		}
+	}else if(n_parti==4){	//"short int a=10" "long int a=10" "unsigned int a=10"  "unsigned short"
+		if(ricerca(str,"=")){
+			risultato=(controllaLongShort_tre_sessione(parti_var));
+		}
+		else{
+			risultato=controllaLongShort_quattro_sessione(parti_var);
+		}
+	}else if(n_parti == 5){	//"unsigned short int a= 10" "long long int a=10"
+		if(ricerca(str,"=")){
+			risultato = controllaLongShort_quattro_sessione(parti_var);
+		}
+		else{
+			risultato = controllaLongShort_cinque_sessione(parti_var);
+		}
+	}else if(n_parti == 6){	//"unsigned long long int a =10"
+		if(ricerca(str,"=")){
+			risultato = controllaLongShort_cinque_sessione(parti_var);
+		}
+		else{
+			risultato = 0;
 		}
 	}
 	// /*

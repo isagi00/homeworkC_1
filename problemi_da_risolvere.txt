@@ -1,0 +1,46 @@
+1.char
+char può assumere valori numerici:
+es. char a= 65;   a='A'
+char supporta tutte le operazioni numeriche:
+es. char a= 'A'+32;  a='a'
+    char b= a+1;     b='b'
+
+(signed) char può assumere valori [-128,127]
+unsigned char può assumere valori [0,255] (0-127 caratteri leggibili con %c)
+
+
+2.int
+distinzione di unsigned int, short int, long int, long long int
+short int=1; == short=1
+
+short unsigned int a = 100;
+unsigned short int a = 100;
+unsigned short a = 100;   
+short unsigned a = 100;          //validi
+unsigned long long int =1;  
+
+
+//non valido
+int short
+int unsigned
+long short int
+
+
+3. double 
+può essere long double o double e basta 
+float solo float 
+
+
+4._bool
+può avere solo valori numeriche
+
+_bool a=1 //vero
+_bool b=0 //falso
+_bool c=1724e76317262 //diventa 1
+_bool d=-93973793391 //diventa 1
+
+non accettabile:
+_bool a=TRUE/True/true/FALSE/False/fasle
+
+
+5. goto e etichetta
