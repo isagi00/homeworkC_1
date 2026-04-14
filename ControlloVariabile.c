@@ -348,19 +348,7 @@ bool controlloArgomentiMain(char* args){
 
 
 
-/*
-controlla se il valore assegnato alla variabile è valido o non.
--valore: stringa che rappresente il valore assegnato alla variabile. es:"10"
--tipo: tipo di dato dichiarato per la variabile. es: "int"
-ritorna true se il valore assegnato è valido
-@TODO:
-unsigned int x = 42;
-unsigned long x = 100000UL;
-unsigned long long x = 9000000000ULL;
-long long x = -9000000000LL;
-long double x = 3.14159265358979323846L;
-L è opzionale
-*/
+
 _Bool isInt(char* valore, bool isSigned){
     int i = 0;
     // salta il segno se c'è
@@ -400,7 +388,7 @@ bool isChar(char* valore, bool isSigned){
 	}
 
 	if(char_numero){
-		int n=(int)valore;
+		int n=atoi(valore);	//cast "42" -> 42 ?
 		if(isSigned){
 			if(n >= -128 && n <= 127){
 				char_numero_ok = true;
@@ -415,12 +403,25 @@ bool isChar(char* valore, bool isSigned){
 	return(char_lettera_ok || char_numero_ok);
 }
 
+
+/*
+controlla se il valore assegnato alla variabile è valido o non.
+-valore: stringa che rappresente il valore assegnato alla variabile. es:"10"
+-tipo: tipo di dato dichiarato per la variabile. es: "int"
+ritorna true se il valore assegnato è valido
+@TODO:
+unsigned int x = 42;
+unsigned long x = 100000UL;
+unsigned long long x = 9000000000ULL;
+long long x = -9000000000LL;
+long double x = 3.14159265358979323846L;
+L è opzionale
+*/
 bool controlloValoreAssegnato(char* valore,char* tipo){
-	static const long long a  = -9000000000LL;
 	// printf("[controlloValoreAssegnato] valore : '%s'\n", valore);
 	//char
 	if(strcmp(tipo,"char")==0){      
-		return isChar(valore);
+		return isChar(valore, true);
     }
 	//int, long, short
 	else if(strcmp(tipo,"int")==0 || strcmp(tipo,"long")==0 || strcmp(tipo,"short")==0){ 

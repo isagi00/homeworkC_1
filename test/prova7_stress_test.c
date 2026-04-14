@@ -5,6 +5,7 @@ int main() {
     bool attivo = true; // bool
     char c = 'X';       // char
     int mai_usata = 42; // questa non viene mai usata
+    char c2 = 67;
 
     // assegnamenti base
     int somma = a + b;  // somma
