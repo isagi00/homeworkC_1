@@ -353,8 +353,16 @@ controlla se il valore assegnato alla variabile è valido o non.
 -valore: stringa che rappresente il valore assegnato alla variabile. es:"10"
 -tipo: tipo di dato dichiarato per la variabile. es: "int"
 ritorna true se il valore assegnato è valido
+@TODO:
+unsigned int x = 42;
+unsigned long x = 100000UL;
+unsigned long long x = 9000000000ULL;
+long long x = -9000000000LL;
+long double x = 3.14159265358979323846L;
+L è opzionale
 */
 bool controlloValoreAssegnato(char* valore,char* tipo){
+	static const long long a  = -9000000000LL;
 	// printf("[controlloValoreAssegnato] valore : '%s'\n", valore);
 	//char
 	if(strcmp(tipo,"char")==0){      
@@ -425,7 +433,14 @@ bool controlloValoreAssegnato(char* valore,char* tipo){
     return true;
 }
 
-//controlla se la dichiarazione della variabile è valida
+/*controlla se la dichiarazione della variabile è valida
+accetta true per:
+1. '[tipo] a'
+2. '[tipo] a = [valore]'
+3. '[storage] [tipo] a = [valore]'
+4. '[qualificatore] [tipo] a = [valore]'
+5. '[storage] [qualificatore] [tipo] a = [valore]
+*/
 bool controllaDichiarazioneVariabile(char* str){
 	if (!str) return false;
 
@@ -491,7 +506,36 @@ bool controllaDichiarazioneVariabile(char* str){
 			}
 		}
 	}
+	// /*
+	// casi: 
+	// - [storage] [qualificatore] [tipo] nome = [valore]
+	// */
+	// int n_sezioni;
+	// char* sezioni = split(copia_str, "=", &n_sezioni);
 
+	// bool ok_specifiche = false;
+	// bool ok_valore = false;
+	// //processa storage, qualificatore, tipo e nome
+	// if (n_sezioni == 1){
+
+	// 	ok_specifiche = controllaSpecificheVar(sezioni[0]);
+	// 	return ok_specifiche;
+	// 	// int n_specifiche;
+	// 	// char* specifiche = split(sezioni[0], " \t", &n_specifiche);
+
+	// 	// //caso: [tipo] nome
+	// 	// if (n_specifiche == 2){
+	// 	// 	ok_specifiche = controlloTipo(specifiche[0]) && controllaNome(specifiche[1]);
+	// 	// }
+	// }
+	// //processa il valore
+	// else if (n_sezioni == 2){
+	// 	ok_specifiche = controllaSpecificheVar(sezioni[0]);
+	// 	//trova il tipo della variabile
+	// 	char* tipo = trovaTipoVar(sezioni[0]);
+	// 	ok_valore = controlloValoreAssegnato(sezioni[0], tipo);
+	// }
+	
     free(parti_var);
     free(copia_str);
 	return risultato;
@@ -836,7 +880,7 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			else if(clean[k] == '}') n_graffe--;
 		}
 
-		//controlla for e while, prima dello split su '{};'.
+		//controlla for , prima dello split su '{};'.
 		//altrimenti esplode su 'for(int i=0; i< qualcosa; i++){...}'
 		if (strncmp(clean, "for", 3) == 0){
 			if(controllaStrutturaControllo(clean, n_riga, stats)){

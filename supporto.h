@@ -7,8 +7,9 @@
 #define SUPPORTO_H
 
 //array utili
-extern const char* tipi_base[];
-
+extern const char* tipi_base[];	//-> extern permette l'utilizzo di questi array in file .c esterni
+extern const char* qualificatori[];
+extern const char* storage[];
 
 //funzioni di supporto
 char** split(char* separaS,char* separatore, int *numeroP);

@@ -4,7 +4,14 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
+const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool",	//bool mi sa che non è tipo base
+						   "signed", "unsigned",
+						   "short", "void", NULL};
+
+const char* qualificatori[] = {"const", "volatile", "restrict", "_Atomic", NULL};
+
+const char* storage[] = {"auto", "static", "extern", "register", NULL};
+
 
 /*funzione splitta str in un array di token.
 str: stringa in input. es: ("hello world")
@@ -79,17 +86,23 @@ char* eliminaSpaziDxSx_v2(char* str){
 	return pulito;
 }
 
-
+/*
+splitta una dichiarazione della variabile in componenti
+-str: stringa che rappresenta una dichiarazione di var
+-numero: numero di parole ritornate dallo split
+ritorna un array di stringhe. es 'int a = 10' -> ['int','a','10]
+*/
 char** split_variabile(char* str, int *numero){
 	char **vettore = malloc(64*sizeof(char*));
     int i = 0;
 
+	//rimuove spazi e tab
     char* token = strtok(str, " \t");
     if(token != NULL){
         vettore[i] = eliminaSpaziDxSx(token);
         i++;
     }
-
+	//rimuove il segno '='
     token = strtok(NULL, "=");
     if(token != NULL){
         vettore[i] =eliminaSpaziDxSx(token);
@@ -706,5 +719,28 @@ bool isAssegnazioneValida(char* str, List* variabili){
 		free(nome_candidato);
 	}
 	return false;
+}
+
+
+// bool controllaSpecificheVar(char* dichiarazione){
+
+// }
+
+char* trovaTipoVar(char* dichiarazione){
+	int n_tokens;
+	char* copia = strdup(dichiarazione);
+	char** tokens = split_variabile(copia, &n_tokens);
+
+	for (int i = 0; i< n_tokens; i++){
+		char* token = tokens[i];
+		for (int j = 0; tipi_base[j] != NULL; j++){
+			if (strcmp(token, tipi_base[j]) == 0){
+				free(tokens);
+				return token;
+			}
+		}
+	}
+	free(tokens);
+	return NULL;
 }
 

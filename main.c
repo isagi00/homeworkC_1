@@ -78,7 +78,7 @@ int main(int argc, char *argv[]){
     // controlloVariabile(nome_file_input, &stats);
 
     //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
-    List *variabili = controllaUtilizzoVariabili(nome_file_input, &stats);
+    List *variabili = controllaUtilizzoVariabili(nome_file_input, &stats);  // ritorna lista delle variabili dichiarate
 
     check_file(nome_file_input,&stats, variabili);
 
