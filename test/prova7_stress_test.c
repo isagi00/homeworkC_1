@@ -6,6 +6,8 @@ int main() {
     char c = 'X';       // char
     int mai_usata = 42; // questa non viene mai usata
     char c2 = 67;
+    unsigned long long int SUPER_LONG;
+    extern const unsigned long long int EXTERNCONST;
 
     // assegnamenti base
     int somma = a + b;  // somma

@@ -12,6 +12,8 @@ const char* qualificatori[] = {"const", "volatile", "restrict", "_Atomic", NULL}
 
 const char* storage[] = {"auto", "static", "extern", "register", NULL};
 
+static const unsigned long long int a;
+
 
 /*funzione splitta str in un array di token.
 str: stringa in input. es: ("hello world")
@@ -750,3 +752,17 @@ char* trovaTipoVar(char* dichiarazione){
 	return NULL;
 }
 
+bool isStruct(char* str){
+	int n_token;
+	char** tokens = split(str, " \t", &n_token);
+	if (n_token == 2){
+		free(tokens);
+		return strcmp(tokens[0],"typedef") == 0 && strcmp(tokens[1],"struct") == 0;
+	}
+	if (n_token == 3){
+		free(tokens);
+		return strcmp(tokens[0],"typedef") == 0 && strcmp(tokens[1],"struct") == 0;
+	}
+	free(tokens);
+	return false;
+}

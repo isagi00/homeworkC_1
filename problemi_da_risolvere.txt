@@ -44,3 +44,20 @@ _bool a=TRUE/True/true/FALSE/False/fasle
 
 
 5. goto e etichetta
+
+6. struct: possibili dichiarazioni: 
+1. con typedef (la più comune)   -> controlla solo questo, è richiesto solo strcut definite tramite typedef.
+    typedef struct {
+        int x;
+        int y;
+    } Punto;
+
+3. typedef con nome tag (utile per struct ricorsive)
+    typedef struct Nodo {
+        int valore;
+        struct Nodo* next;  // serve il tag per riferirsi a se stessa
+    } Nodo;
+
+    // se hai usato typedef
+    typedef struct { int x; int y; } Punto;
+    Punto a;  // ok, direttamente -> quindi 'Punto' sarà un tipo di variabile valido

@@ -56,6 +56,8 @@ bool controlloTipo(char* parola){
 	else if(strcmp(parola,"bool")==0){
         return true;
     }
+	//gestisci casi per tipi definiti dall'utente
+
 
 	printf("[Errore dichiarazione tipo]");
     return false;
@@ -189,16 +191,6 @@ bool controllaNome(char* parola){
 	free(copia);
 	return true;
 
-    // for(int i = 0; i < n; i++){
-    //     if(i == 0){		//il primo carattere non può essere un intero. puo essere '_' ma è sconsigliato
-    //         if(!(isalpha(parola[i]) || parola[i] == '_')){
-    //             return false;
-    //         }
-    //     }
-    //     else if(!(isalnum(parola[i]) || parola[i] == '_')){
-    //         return false;
-    //     }
-    // }
 }
 
 /*
@@ -556,7 +548,7 @@ true per:
 4. '[qualificatore] [tipo] a = [valore]'
 5. '[storage] [qualificatore] [tipo] a = [valore]
 */
-bool controllaDichiarazioneVariabile(char* str){
+bool controllaDichiarazioneVariabile(char* str, List* strutture_definite){
 	if (!str) return false;
 
 	//duplica e splitta 
@@ -578,6 +570,8 @@ bool controllaDichiarazioneVariabile(char* str){
 	//caso: "int a"
 	else if(n_parti==2){ // "int i"
 		risultato = (controlloTipo(parti_var[0]) && controllaNome(parti_var[1]));
+		//todo: controlla il tipo pexr al struttura definita in controllotipo
+
 	}
 	//caso: "int a = 10"
 	else if(n_parti==3){	//"int i = 10"
@@ -616,35 +610,6 @@ bool controllaDichiarazioneVariabile(char* str){
 			risultato = 0;
 		}
 	}
-	// /*
-	// casi: 
-	// - [storage] [qualificatore] [tipo] nome = [valore]
-	// */
-	// int n_sezioni;
-	// char* sezioni = split(copia_str, "=", &n_sezioni);
-
-	// bool ok_specifiche = false;
-	// bool ok_valore = false;
-	// //processa storage, qualificatore, tipo e nome
-	// if (n_sezioni == 1){
-
-	// 	ok_specifiche = controllaSpecificheVar(sezioni[0]);
-	// 	return ok_specifiche;
-	// 	// int n_specifiche;
-	// 	// char* specifiche = split(sezioni[0], " \t", &n_specifiche);
-
-	// 	// //caso: [tipo] nome
-	// 	// if (n_specifiche == 2){
-	// 	// 	ok_specifiche = controlloTipo(specifiche[0]) && controllaNome(specifiche[1]);
-	// 	// }
-	// }
-	// //processa il valore
-	// else if (n_sezioni == 2){
-	// 	ok_specifiche = controllaSpecificheVar(sezioni[0]);
-	// 	//trova il tipo della variabile
-	// 	char* tipo = trovaTipoVar(sezioni[0]);
-	// 	ok_valore = controlloValoreAssegnato(sezioni[0], tipo);
-	// }
 	
     free(parti_var);
     free(copia_str);
@@ -702,173 +667,6 @@ bool isMain(char* riga) {
 	return ok_args;
 }
 
-//controlla il tipo delle variabili
-char* controlloVariabile(char* filename, Statistiche *stats){
-	//apertura file .c
-    FILE *file = fopen(filename, "r");
-	//gestione errore apertura file
-    if(file == NULL){
-        printf("[ControlloVariabile] errore apertura file: %s\n", filename);
-        return NULL;
-    }
-
-	//inizializzazione var utili
-    char riga[1024];
-    int numero_pv, numero_s;
-    int numeroRiga = 1;	//riga corrente
-    bool esisteMain = false;
-	int num_graffe = 0;
-
-	//ciclo principale 
-    while(fgets(riga, sizeof(riga), file) != NULL){
-        riga[strcspn(riga, "\n")] = '\0';
-
-        char *rigaPul = eliminaSpaziDxSx_v2(riga);
-        char **parole_split_pv = split(rigaPul, "{};", &numero_pv);
-		//stampaParoleSplit(parole_split_pv,numero_pv);
-
-		//controlla se è una riga vuota
-        if(numero_pv == 0){
-            free(parole_split_pv);
-            numeroRiga++;
-            continue;
-        }
-		//controlla se è commento o include 
-        if(controllaRigaCommento(parole_split_pv[0]) || controllaRigaInclude(parole_split_pv[0])){
-            numeroRiga++;
-            free(parole_split_pv);
-            continue;
-        }
-		
-		//controlla se la riga attuale è una dichiarazione valida di main, funzione o di variabile
-        for(int i = 0; i < numero_pv; i++){
-            char *cp = parole_split_pv[i];
-			char *cp1 = strdup(rimuoviSpaziSx(cp));
-			char** cp2=NULL;
-			int numero_variabile;
-            //char **parole_split_s = split(cp, " ", &numero_s);
-
-			//printf("%s\n",cp);
-
-			//controlla se è una dichirazione valida di main
-            if(isMain(cp)){			//per ogni riga viene chiamata questa funzione..... 这个要改一下 
-				if(!esisteMain){
-					printf("[ControlloVariabile] dichiarazione del main() corretta:%i\n",numeroRiga);
-               		esisteMain = true;
-					continue;
-				}
-				else{
-					stats->errori_rilevati++;
-					printf("[ControlloVariabile]: rilevato un secondo main alla riga:  %i\n",numeroRiga);
-                	continue;
-            	}
-			}
-			//controlla se è una dichiarazione valida di funzione
-			else if(isFunzione(cp1)){
-				printf("[ControlloVariabile] rilevata una funzione %d riga: %i\n",isFunzione(cp1),numeroRiga);
-			}
-			//controlla se è una dichiarazione valida di variabile
-			else{
-				//printf("%s è una funzione %d riga: %i\n",cp1,isFunzione(cp1),numeroRiga);
-				if(controllaDichiarazioneVariabile(cp1)){
-					stats->variabili_controllate++;
-					printf("[ControlloVariabile] dichiarata variabile '%s' alla riga: %i\n", cp1, numeroRiga);
-				}
-				else{
-					stats->errori_rilevati++;
-					printf("[Errore Variabile] errore di dichiarazione della variabile '%s' alla riga: %i\n",cp1,numeroRiga);
-					
-				}
-			}
-			//接下来要写struct? 
-
-			/*
-			
-			todo: 
-			1. se la riga contiene una keyword come if, oppure else if, ci sta sta controllare l'apertura delle
-			parentesi tonde e correttezza della dichiarazione della variabili o della condizione al suo interno.
-			if (int esempio) {
-			}
-
-			2. (forse da fare) contare il numero della graffe. alla fine del parsing del file si deve avere un numero di 
-			graffe aperte uguale al numero di graffe chiuse. poi se si errore non lo gestiamo ma ritorniamo un errore di tipo:
-			"mancano graffe " sul terminale
-			
-			3. al momento come 'numero di variabili controllate' vengono contante solo quelle che sono state dichiarate 
-			correttamente. contiamo anche quelli che sono stati dichiarati incorrettamente?
-			
-			*/
-
-			
-			/*else{
-				
-			}
-            
-            
-
-            char* tipo_ = NULL;
-            bool haTipo = false;
-            bool valoreCor = false;
-			bool isFunzione = false;
-            RisultatoNome haNomeCorretto = {false, false};
-			
-			
-            for(int j = 0; j < numero_s; j++){
-                if(!haTipo){
-                    if(controlloTipo(parole_split_s[j])){
-                        haTipo = true;
-                        tipo_ = parole_split_s[j];
-                    } else {
-						haNomeCorretto=controllaNome(parole_split_s[j]);
-						int n_separa_uguale;
-						char** separa_uguale = split(parole_split_pv[i], "=", &n_separa_uguale);
-						if(haNomeCorretto.cor && n_separa_uguale==2){
-							int n_separa_uguale_spazzio;
-							char** separa_uguale_spazzio = split(separa_uguale[0], " ", &n_separa_uguale_spazzio);
-							if (n_separa_uguale_spazzio>1)
-							{
-								stats->tipi_dato_scorretti++;
-								stats->errori_rilevati;
-								printf("[ERRORE riga %d] tipo scorretto: %s\n", numeroRiga, parole_split_s[j]);
-							}
-							else
-							{
-								printf("[è una variabile\n]");
-								break;
-							}
-						}
-						else{
- 							printf("errore forma");
-						}
-                    }
-                } else {
-                    haNomeCorretto = controllaNome(parole_split_s[j]);
-                    if(!haNomeCorretto.cor){                          
-                        stats->nomi_variabili_non_corretti++;
-						stats->errori_rilevati++;
-						haTipo=false;
-						printf("[ERRORE riga %d] nome scorretto: %s\n", numeroRiga, parole_split_s[j]);
-                    }
-                    if(haNomeCorretto.haugu){
-                        valoreCor = controllaVar(parole_split_s[j], tipo_); 
-                        if(!valoreCor){
-                            stats->errori_rilevati++;
-							printf("[ERRORE riga %d] valore scorretto: %s\n", numeroRiga, parole_split_s[j]);
-                        }
-                    }
-                }
-            }*/
-
-            //free(parole_split_s);
-			free(cp1);
-        }
-        numeroRiga++;
-        free(parole_split_pv);
-    }
-	fclose(file);
-	printf("[ControlloVariabile] termine controllo variabili\n");
-	return NULL;
-}
 
 /*
 controlla se la dichiarazione di if/else/while/for sia corretta
@@ -912,8 +710,6 @@ bool controllaStrutturaControllo(char* token, int riga, Statistiche* stats){
 		return true;
 	}
 
-
-
 	//cerca le parentesi tonde e verifica se è corretto
 	char* paren_aperta = strchr(token, '(');
 	char* paren_chiusa = strchr(token, ')');
@@ -952,6 +748,8 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 	int n_graffe = 0;
 	bool main_dichiarato = false;
 	bool in_commento_multiplo = false;
+	bool in_struct = false;
+	List* struct_definite = list_create();
 
 	//scorre le righe del file
 	while (fgets(riga, sizeof(riga), file) != NULL){
@@ -1004,7 +802,6 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			continue;
 		}
 
-		
 
 		//split su '{' '}' e ';', controllo split vuoto.
 		//tokens ha: "int test = 0", "char hello, ...", array di stringhe.
@@ -1023,7 +820,6 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			continue;
 		}
 
-
 		//processa ogni token
 		for(int i = 0; i < n_tokens; i++){
 			// un token è del tipo: "int test = 0"
@@ -1032,6 +828,11 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			char* pulito = eliminaSpaziDxSx_v2(token);
 			if (!pulito) continue;
 
+			//gestione struct
+			if (!in_struct && isStruct(pulito)){
+				in_struct = true;
+
+			}
 		
 			//controllo dichiarazione main() e gestione main() duplicato
 			if (!main_dichiarato && isMain(pulito)){
