@@ -26,6 +26,8 @@ void rimuoviCommentoInline(char* str);
 int contaRigheFile(const char* filename);
 _Bool ricerca(char* str, char* str_da_ricercare);
 
+bool isStruct(char* str);
+
 
 
 

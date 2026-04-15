@@ -1,21 +1,14 @@
-#include <stdio.h>
+// Caso 1: singola riga
+typedef struct { int a; int b; } Point;
 
+// Caso 2: multi-riga
 typedef struct {
-    int x;
-    int y;
+    int a;
+    int b;
 } Point;
 
-typedef unsigned int uint;
+// Caso 3: con tag opzionale
+typedef struct PointTag { int x; } Point;
 
-int main() {
-    Point p;
-    p.x = 3;
-    p.y = 7;
-
-    uint count = 42;
-
-    printf("Point: (%d, %d)\n", p.x, p.y);
-    printf("Count: %u\n", count);
-
-    return 0;
-}
+// Caso 4: multipli alias
+typedef struct { int v; } Vec, *VecPtr;

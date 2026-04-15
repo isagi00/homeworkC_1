@@ -753,13 +753,10 @@ char* trovaTipoVar(char* dichiarazione){
 }
 
 bool isStruct(char* str){
+	char* copia = strdup(str);
 	int n_token;
-	char** tokens = split(str, " \t", &n_token);
-	if (n_token == 2){
-		free(tokens);
-		return strcmp(tokens[0],"typedef") == 0 && strcmp(tokens[1],"struct") == 0;
-	}
-	if (n_token == 3){
+	char** tokens = split(copia, " \t{};", &n_token);
+	if (n_token >= 2){
 		free(tokens);
 		return strcmp(tokens[0],"typedef") == 0 && strcmp(tokens[1],"struct") == 0;
 	}

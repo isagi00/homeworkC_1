@@ -802,6 +802,13 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			continue;
 		}
 
+		//rileva inizio struct
+		if (!in_struct && isStruct(clean)){
+			printf("inizio 'typedef struct' alla riga %i \n", n_riga);
+			in_struct = true;
+			//caso in cui il typedef strcut avviene su unica riga
+
+		}
 
 		//split su '{' '}' e ';', controllo split vuoto.
 		//tokens ha: "int test = 0", "char hello, ...", array di stringhe.
@@ -827,12 +834,6 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			if(!token) continue;
 			char* pulito = eliminaSpaziDxSx_v2(token);
 			if (!pulito) continue;
-
-			//gestione struct
-			if (!in_struct && isStruct(pulito)){
-				in_struct = true;
-
-			}
 		
 			//controllo dichiarazione main() e gestione main() duplicato
 			if (!main_dichiarato && isMain(pulito)){
