@@ -548,7 +548,7 @@ true per:
 4. '[qualificatore] [tipo] a = [valore]'
 5. '[storage] [qualificatore] [tipo] a = [valore]
 */
-bool controllaDichiarazioneVariabile(char* str, List* strutture_definite){
+bool controllaDichiarazioneVariabile(char* str){
 	if (!str) return false;
 
 	//duplica e splitta 
@@ -750,6 +750,7 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 	bool in_commento_multiplo = false;
 	bool in_struct = false;
 	List* struct_definite = list_create();
+	char struct_buffer[4028];
 
 	//scorre le righe del file
 	while (fgets(riga, sizeof(riga), file) != NULL){
@@ -802,13 +803,20 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			continue;
 		}
 
-		//rileva inizio struct
-		if (!in_struct && isStruct(clean)){
-			printf("inizio 'typedef struct' alla riga %i \n", n_riga);
-			in_struct = true;
-			//caso in cui il typedef strcut avviene su unica riga
+		// //rileva inizio struct
+		// if (!in_struct && isStruct(clean)){
+		// 	printf("inizio 'typedef struct' alla riga %i \n", n_riga);
+		// 	in_struct = true;
+		// 	//caso in cui il typedef struct avviene su unica riga, quindi ci sta '}'
+		// 	if (strchr(clean, '}')){
+		// 		// processaStruct(clean);
+		// 		in_struct = false;
+		// 	}
 
-		}
+		// }
+		// //rileva fine struct
+		// if(in_struct && )
+		
 
 		//split su '{' '}' e ';', controllo split vuoto.
 		//tokens ha: "int test = 0", "char hello, ...", array di stringhe.

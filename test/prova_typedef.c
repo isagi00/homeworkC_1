@@ -1,5 +1,7 @@
+
 // Caso 1: singola riga
 typedef struct { int a; int b; } Point;
+
 
 // Caso 2: multi-riga
 typedef struct {
@@ -7,8 +9,10 @@ typedef struct {
     int b;
 } Point;
 
-// Caso 3: con tag opzionale
+
+// // Caso 3: con tag opzionale
 typedef struct PointTag { int x; } Point;
 
-// Caso 4: multipli alias
+// // Caso 4: multipli alias
 typedef struct { int v; } Vec, *VecPtr;
+
