@@ -8,7 +8,7 @@ typedef struct {
     
     int a;
     int b;
-} Point;
+} Point, *pointer;
 
 
 // // Caso 3: con tag opzionale
@@ -18,4 +18,6 @@ typedef struct tag { int x; } Point;
 typedef struct { int v; } Vec, *VecPtr;
 
 typedef enum {gennaio, febbraio};
+
+Point p;
 
