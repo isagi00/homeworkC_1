@@ -555,6 +555,7 @@ bool controllaDichiarazioneVariabile(char* str){
 	int n_parti;
 	char* copia_str=strdup(str);	//"int a = 10"
 	//printf("\n %s \n",parole_copia);
+
     char** parti_var=split_variabile(copia_str,&n_parti);	// "int", "a", "10"
 	if (!parti_var)
 	{
@@ -804,15 +805,17 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 		}
 
 		// //rileva inizio struct
-		// if (!in_struct && isStruct(clean)){
-		// 	printf("inizio 'typedef struct' alla riga %i \n", n_riga);
-		// 	in_struct = true;
-		// 	//caso in cui il typedef struct avviene su unica riga, quindi ci sta '}'
-		// 	if (strchr(clean, '}')){
-		// 		// processaStruct(clean);
-		// 		in_struct = false;
-		// 	}
-
+		if (!in_struct && isStruct(clean)){
+			printf("inizio 'typedef struct' alla riga %i \n", n_riga);
+			in_struct = true;
+			//caso in cui il typedef struct avviene su unica riga, quindi ci sta '}'
+			if (strchr(clean, '}')){
+				// processaStruct(clean);
+				n_riga++;
+				continue;
+				in_struct = false;
+			}
+		}
 		// }
 		// //rileva fine struct
 		// if(in_struct && )
@@ -841,7 +844,10 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			char* token = tokens[i];
 			if(!token) continue;
 			char* pulito = eliminaSpaziDxSx_v2(token);
-			if (!pulito) continue;
+			if (!pulito || strlen(pulito) == 0){	//salta se pulito = ""
+				free(pulito);
+			 	continue;
+			}
 		
 			//controllo dichiarazione main() e gestione main() duplicato
 			if (!main_dichiarato && isMain(pulito)){

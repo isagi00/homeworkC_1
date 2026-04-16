@@ -90,28 +90,39 @@ char* eliminaSpaziDxSx_v2(char* str){
 
 //strtok hen nb bi genshin nb
 char** split_variabile(char* str, int *numero) {
-    char **vettore = malloc(64 * sizeof(char*));
+    if (!str || !numero) return NULL;
+    
+    char **vettore = calloc(64, sizeof(char*));  // ✅ calloc per inizializzare a NULL
+    if (!vettore) return NULL;
+    
     int i = 0;
+    char* str_copy = strdup(str);  // ✅ copia per strtok (che modifica)
+    if (!str_copy) { free(vettore); return NULL; }
 
-    // prima parte: tutto ciò che sta prima di "="
-    char* token = strtok(str, "=");
-    if(token != NULL) {
-        // splitta per spazi la prima parte
+    // Prima parte: prima di "="
+    char* token = strtok(str_copy, "=");
+    if (token != NULL) {
         char* t = strtok(token, " \t");
-        while(t != NULL) {
-            vettore[i] = eliminaSpaziDxSx(t);
-            i++;
+        while (t != NULL && i < 63) {
+            // ✅ USA eliminaSpaziDxSx_v2 che ALLOCA con strndup!
+            char* trimmed = eliminaSpaziDxSx_v2(t);
+            if (trimmed) {
+                vettore[i++] = trimmed;  // ✅ pointer indipendente (heap)
+            }
             t = strtok(NULL, " \t");
         }
     }
 
-    // seconda parte: dopo il "="
+    // Seconda parte: dopo "="
     token = strtok(NULL, "");
-    if(token != NULL) {
-        vettore[i] = eliminaSpaziDxSx(token);
-        i++;
+    if (token != NULL && i < 63) {
+        char* trimmed = eliminaSpaziDxSx_v2(token);
+        if (trimmed) {
+            vettore[i++] = trimmed;
+        }
     }
 
+    free(str_copy);  // ✅ ora sicuro: vettore contiene copie indipendenti
     *numero = i;
     return vettore;
 }
@@ -695,6 +706,10 @@ bool isAssegnazioneValida(char* str, List* variabili){
 	char** tokens = split(copia_str, " \t", &n_token);
 	if (n_token > 0) primo_token = strdup(tokens[0]);
 	free(tokens);
+	if (!primo_token) {	//guard
+		free(copia_str);
+		return false;
+	}
 
 	bool inizia_con_tipo = false;
 	for(int i = 0; tipi_base[i] != NULL; i++){
@@ -716,16 +731,24 @@ bool isAssegnazioneValida(char* str, List* variabili){
 
 		if(n_token2 > 0) nome_candidato = strdup(tokens2[0]);
 		free(tokens2);
+		if(!nome_candidato){
+			free(copia_str2);
+			free(copia_str);
+			return false;
+		}
 
 		//check se candidato è già stato dichiarato
 		for(int j = 0; j < variabili->numero_elementi_attuali; j++){
 			Variabile* var = list_get(variabili, j);
 			if (strcmp(nome_candidato, var->nome) == 0){
+				free(copia_str2);
+				free(copia_str);
 				return true;
 			}
 		}
 		free(nome_candidato);
 	}
+	free(copia_str);
 	return false;
 }
 
@@ -753,14 +776,19 @@ char* trovaTipoVar(char* dichiarazione){
 }
 
 bool isStruct(char* str){
+	if(!str) return false;
 	//typedef struct{ int x; } Point;
 	char* copia = strdup(str);
+	if(!copia) return false;
 	int n_token;
 	char** tokens = split(copia, " \t{};", &n_token); //typedef, struct,  int, x, Point
+
+	bool result = false;
 	if (n_token >= 2){
-		free(tokens);
-		return strcmp(tokens[0],"typedef") == 0 && strcmp(tokens[1],"struct") == 0;
+		result = strcmp(tokens[0],"typedef") == 0 && strcmp(tokens[1],"struct") == 0;
 	}
+
+	free(copia);
 	free(tokens);
-	return false;
+	return result;
 }
