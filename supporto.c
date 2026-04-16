@@ -93,11 +93,11 @@ char* eliminaSpaziDxSx_v2(char* str){
 char** split_variabile(char* str, int *numero) {
     if (!str || !numero) return NULL;
     
-    char **vettore = calloc(64, sizeof(char*));  // ✅ calloc per inizializzare a NULL
+    char **vettore = calloc(64, sizeof(char*));  //  calloc per inizializzare a NULL
     if (!vettore) return NULL;
     
     int i = 0;
-    char* str_copy = strdup(str);  // ✅ copia per strtok (che modifica)
+    char* str_copy = strdup(str);  // copia per strtok (che modifica)
     if (!str_copy) { free(vettore); return NULL; }
 
     // Prima parte: prima di "="
@@ -105,10 +105,10 @@ char** split_variabile(char* str, int *numero) {
     if (token != NULL) {
         char* t = strtok(token, " \t");
         while (t != NULL && i < 63) {
-            // ✅ USA eliminaSpaziDxSx_v2 che ALLOCA con strndup!
+            
             char* trimmed = eliminaSpaziDxSx_v2(t);
             if (trimmed) {
-                vettore[i++] = trimmed;  // ✅ pointer indipendente (heap)
+                vettore[i++] = trimmed;  // pointer indipendente (heap)
             }
             t = strtok(NULL, " \t");
         }

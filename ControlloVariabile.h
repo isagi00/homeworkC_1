@@ -22,7 +22,7 @@ bool controlloNome(char* parola);
 char*  controlloVariabile(char* filename,Statistiche *stats);
 
 bool controllaStrutturaControllo(char* token, int riga, Statistiche* stats);
-void check_file(char* filename, Statistiche* stats, List* variabili);
+List* check_file(char* filename, Statistiche* stats/*, List* variabili*/);
 
 
 //char*  controlloVariabile(char* filename, bool opzione_output, bool opzione_verbose);

@@ -74,31 +74,33 @@ int main(int argc, char *argv[]){
     //qui vanno le funzioni. 
 
     Statistiche stats = {0};    //inizializza tutto a 0
-
-    //controllo variabili
-    // controlloVariabile(nome_file_input, &stats);
+    // List* variabili;
 
     //controlloVariabile(nome_file_input,opzione_output, opzione_verbose);
-    List *variabili = controllaUtilizzoVariabili(nome_file_input, &stats);  // ritorna lista delle variabili dichiarate
+    // List *variabili = controllaUtilizzoVariabili(nome_file_input, &stats);  // ritorna lista delle variabili dichiarate
 
-    check_file(nome_file_input,&stats, variabili);
-
+    List* variabili_dichiarate = check_file(nome_file_input, &stats);
+    
+    for (int i = 0; i < variabili_dichiarate->numero_elementi_attuali; i++){
+        Variabile* var = list_get(variabili_dichiarate, i);
+        printf("[MAIN] var dichiarata: '%s' di tipo: '%s' alla riga %i\n", var->nome, var->tipo, var->riga_dichiarata);
+    }
     
 
 
     if (opzione_output == true && opzione_verbose == true){
-        salva_statistiche_file_esterno(nome_file_output, &stats, variabili);
-        stampa_statistiche_su_terminale(&stats, variabili);
+        salva_statistiche_file_esterno(nome_file_output, &stats, variabili_dichiarate);
+        stampa_statistiche_su_terminale(&stats, variabili_dichiarate);
         printf("===========================[termine analisi]===========================\n");
         return 0;
     }
     else if (opzione_output == true && opzione_verbose == false){
-        salva_statistiche_file_esterno(nome_file_output, &stats, variabili);
+        salva_statistiche_file_esterno(nome_file_output, &stats, variabili_dichiarate);
         printf("===========================[termine analisi]===========================\n");
         return 0;
     }
     else if (opzione_output == false){   //senza -o, --out: stampa su terminale di default
-        stampa_statistiche_su_terminale(&stats, variabili);
+        stampa_statistiche_su_terminale(&stats, variabili_dichiarate);
         printf("===========================[termine analisi]===========================\n");
         return 0;
     }

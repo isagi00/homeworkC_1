@@ -72,7 +72,7 @@ bool controlloTipo(char* parola, List* struct_definite){
 	}
 
 
-	printf("[Errore dichiarazione tipo]");
+	printf("[controlloTipo] errore di tipo");
     return false;
 }
 
@@ -206,6 +206,10 @@ bool controllaNome(char* parola){
 
 }
 
+/*
+controlla se l'alias di una struct è valida o non.
+ritorna il nome dell'alias valido
+*/
 bool controllaNomeAliasStruct(char* nome){
 	if (!nome || strlen(nome) == 0) return false;
 
@@ -248,7 +252,7 @@ StructDef* parseTypedefStruct(char* buffer, int riga_inizio){
 	}
 	printf("[parsetypedef]: ok 'typedef struct' alla riga: %i\n", riga_inizio);
 	
-	//
+	//crea il StructDef, con [tag] e alias
 	StructDef* sd = struct_create();
 	if (!sd) { free(str); return NULL; };
 
@@ -645,6 +649,9 @@ bool controlloValoreAssegnato(char* valore,char* tipo){
 }
 
 
+/*
+controlla [tipo composto da 2] + nome
+*/
 _Bool controllaLongShort_tre_sessione(char** parti_var) {
     return (
 		// casi con "long" prima
@@ -679,6 +686,9 @@ _Bool controllaLongShort_tre_sessione(char** parti_var) {
 	);
 }
 
+/*
+[tipo tipo tipo] nome
+*/
 _Bool controllaLongShort_quattro_sessione(char** parti_var) {
 	return (
         // "long long int a"
@@ -718,7 +728,7 @@ true per:
 4. '[qualificatore] [tipo] a = [valore]'
 5. '[storage] [qualificatore] [tipo] a = [valore]
 */
-bool controllaDichiarazioneVariabile(char* str, List* struct_definite){
+bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite, List* var_dichiarate){
 	if (!str) return false;
 
 	//duplica e splitta 
@@ -736,46 +746,185 @@ bool controllaDichiarazioneVariabile(char* str, List* struct_definite){
 	
 	//caso: "int"
 	if(n_parti<=1){
-		risultato = false; //int 
+		risultato = false; 
 	}
-	//caso: "int a"
-	else if(n_parti==2){ // "int i"
+	//caso: int, a
+	else if(n_parti==2){
+		for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+		}
 		risultato = (controlloTipo(parti_var[0], struct_definite) && controllaNome(parti_var[1]));
-		//todo: controlla il tipo pexr al struttura definita in controllotipo
-
+		if (risultato){
+			Variabile* var = malloc(sizeof(Variabile));
+			var->nome = strdup(parti_var[1]);
+			var->tipo = strdup(parti_var[0]);
+			var->riga_dichiarata = riga;
+			var->usata = false;	
+			list_append(var_dichiarate, var);
+		}
+		
 	}
-	//caso: "int a = 10"
+	//caso: int, a , 10
 	else if(n_parti==3){	//"int i = 10"
+		for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+		}
 		if (controlloTipo(parti_var[0], struct_definite) && controllaNome(parti_var[1])){
 			if (controlloValoreAssegnato(parti_var[2], parti_var[0])){
 				risultato = true;
+				if (risultato) {
+					Variabile* var = malloc(sizeof(Variabile));
+					var->nome = strdup(parti_var[1]);
+					var->tipo = strdup(parti_var[0]);
+					var->riga_dichiarata = riga;
+					var->usata = false;	
+					list_append(var_dichiarate, var);
+				}
 			}
 			else{
 				printf("[controllaDichiarazioneVariabile] valore '%s' non valido per tipo '%s'\n", parti_var[2],parti_var[0]);
 			}
 		}
+		// long, long, a
 		else if(controllaLongShort_tre_sessione(parti_var))
     	{
-			printf("ppppppppppppppppppppppppppppppppppp\n");
+			for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+			}
 			risultato=true;
+			if (risultato){
+				char buffer_tipo[256] = {0};
+				strcat(buffer_tipo, parti_var[0]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[1]);
+
+				Variabile* var = malloc(sizeof(Variabile));
+				var->nome = strdup(parti_var[2]);
+				var->tipo = strdup(buffer_tipo);
+				var->riga_dichiarata = riga;
+				var->usata = false;	
+				list_append(var_dichiarate, var);
+			}
 		}
-	}else if(n_parti==4){	//"short int a=10" "long int a=10" "unsigned int a=10"  "unsigned short"
+	}
+	//long, long ,a , 10;
+	//unsigned long long a;
+	else if(n_parti==4){	//"short int a=10" "long int a=10" "unsigned int a=10"  "unsigned short"
 		if(ricerca(str,"=")){
+			for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+			}
+			//[long int a = 10]
 			risultato=(controllaLongShort_tre_sessione(parti_var));
+			if (risultato){
+				char buffer_tipo[256] = {0};
+				strcat(buffer_tipo, parti_var[0]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[1]);
+
+				Variabile* var = malloc(sizeof(Variabile));
+				var->nome = strdup(parti_var[2]);
+				var->tipo = strdup(buffer_tipo);
+				var->riga_dichiarata = riga;
+				var->usata = false;	
+				list_append(var_dichiarate, var);
+			}
 		}
 		else{
+			for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+			}
+			//unsigned long long a;
 			risultato=controllaLongShort_quattro_sessione(parti_var);
+			if (risultato){
+				char buffer_tipo[256] = {0};
+				strcat(buffer_tipo, parti_var[0]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[1]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[2]);
+
+				Variabile* var = malloc(sizeof(Variabile));
+				var->nome = strdup(parti_var[3]);
+				var->tipo = strdup(buffer_tipo);
+				var->riga_dichiarata = riga;
+				var->usata = false;	
+				list_append(var_dichiarate, var);
+			}
 		}
-	}else if(n_parti == 5){	//"unsigned short int a= 10" "long long int a=10"
+	}
+	else if(n_parti == 5){	//"unsigned short int a = 10" "long long int a=10"
 		if(ricerca(str,"=")){
-			risultato = controllaLongShort_quattro_sessione(parti_var);
+			printf("5\n");
+			for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+			}
+			risultato = controllaLongShort_quattro_sessione(parti_var); //unsigned long long a = 10
+			if (risultato){
+				char buffer_tipo[256] = {0};
+				strcat(buffer_tipo, parti_var[0]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[1]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[2]);
+				
+
+				Variabile* var = malloc(sizeof(Variabile));
+				var->nome = strdup(parti_var[3]);
+				var->tipo = strdup(buffer_tipo);
+				var->riga_dichiarata = riga;
+				var->usata = false;	
+				list_append(var_dichiarate, var);
+			}
 		}
 		else{
+			printf("5\n");
+			for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+			}
+			//unsigned long long int a;
 			risultato = controllaLongShort_cinque_sessione(parti_var);
+			if (risultato){
+				char buffer_tipo[256] = {0};
+				strcat(buffer_tipo, parti_var[0]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[1]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[2]);
+
+				Variabile* var = malloc(sizeof(Variabile));
+				var->nome = strdup(parti_var[3]);
+				var->tipo = strdup(buffer_tipo);
+				var->riga_dichiarata = riga;
+				var->usata = false;	
+				list_append(var_dichiarate, var);
+			}
 		}
-	}else if(n_parti == 6){	//"unsigned long long int a =10"
+	}
+	else if(n_parti == 6){	//"unsigned long long int a = 10"
 		if(ricerca(str,"=")){
+			printf("6\n");
+			for (int i = 0; i<n_parti; i++){
+			printf("%i: '%s' \n", i, parti_var[i]);
+			}
 			risultato = controllaLongShort_cinque_sessione(parti_var);
+			if (risultato){
+				char buffer_tipo[256] = {0};
+				strcat(buffer_tipo, parti_var[0]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[1]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[2]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[3]);
+
+				Variabile* var = malloc(sizeof(Variabile));
+				var->nome = strdup(parti_var[4]);
+				var->tipo = strdup(buffer_tipo);
+				var->riga_dichiarata = riga;
+				var->usata = false;	
+				list_append(var_dichiarate, var);
+			}
 		}
 		else{
 			risultato = 0;
@@ -905,12 +1054,12 @@ la funzione controlla la correttezza di:
 3. dichiarazione delle variabili
 
 */
-void check_file(char* filename, Statistiche* stats, List* variabili){
+List* check_file(char* filename, Statistiche* stats){
 	//apertura file e gestione errore
 	FILE* file = fopen(filename, "r");
 	if (!file){
 		printf("[ControlloVariabile] errore apertura file: %s\n", filename);
-		return;
+		return NULL;
 	}
 
 	//init variabili utili
@@ -925,6 +1074,8 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 	List* struct_definite = list_create();
 	char struct_buffer[4028] = {0}; //buffer per accumulare righe se struct righe multiple
 	int riga_inizio_struct = 0;
+
+	List* var_dichiarate = list_create();
 
 	//scorre le righe del file
 	while (fgets(riga, sizeof(riga), file) != NULL){
@@ -1069,7 +1220,7 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 					printf("[checkfile] return fuori dal main alla riga %i \n", n_riga);
 					stats->errori_rilevati++;
 				}
-				else if (controllaReturnValido(pulito, variabili)){
+				else if (controllaReturnValido(pulito, var_dichiarate)){
 					printf("[checkfile] return ok alla riga: %i \n", n_riga);
 				}
 				else{
@@ -1086,17 +1237,19 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 			}
 
 			//controllo assegnazione, es: 'a = b + 10;'
-			if (isAssegnazioneValida(pulito, variabili)){
+			if (isAssegnazioneValida(pulito, var_dichiarate)){
 				printf("[checkfile] assegnazione valida alla riga: %i \n", n_riga);
 				free(pulito);
  				continue;
 			}
 
 			//controllo dichiarazione delle variabili
-			if(controllaDichiarazioneVariabile(pulito, struct_definite)){
+			if(controllaDichiarazioneVariabile(pulito, n_riga, struct_definite, var_dichiarate)){
 				// Variabile
 				stats->variabili_controllate++;	//conta solo dichiarazione valida di var
 				printf("[checkfile] variabile valida '%s' alla riga %i\n", pulito, n_riga);
+				//adrebbe aggiunto alla lista delle variabili dichiarate
+
 			}
 			else{
 				stats->errori_rilevati++; //errori contati separatamente
@@ -1131,7 +1284,7 @@ void check_file(char* filename, Statistiche* stats, List* variabili){
 		stampaStructDef(sd);
 	}
 
-	return;
+	return var_dichiarate;
 }
 
 //funziona ritorna una lista di tutte le variabili dichiarate.

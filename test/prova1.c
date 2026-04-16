@@ -1,26 +1,17 @@
-#include <stdio.h>
-#include <string.h>
-
-inti a;
-float b;
-char c;
-
-int porcatroiaattaccato=1;
-int under_score= 5;
-
 
 
 int main(int abc, char *hello[]){
+    //base
+    int a; // 2
+    int a2 = 0; // 3
 
-    int x = 5;
-    float y=3.14;
-    short int i=23;
-    char no%me[32];
-    bool attivo = true;
-    int contatore = 0;
+    //doppio
+    long long b; // 3
+    long long b2 = 10; // 4
 
-    contatore = x + 1;
-    printf("%f\n", y);
+    //triplo
+    unsigned long long c; // 4
+    unsigned long long c2 = 20; // 5
 
     return 0;
 }
