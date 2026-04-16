@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdbool.h>
+#include "strutturedati.h"
 
 
 //include guard
@@ -31,34 +32,34 @@ bool isStruct(char* str);
 
 
 
-//struct List
-typedef struct{
-	void **puntatore;	//puntatore all'array di puntatori che puntano a oggetti di vario tipo
-	size_t numero_elementi_attuali;	//numero di elementi attuali (slot occupati)
-	size_t spazio_totale_allocato;		//numero di slot nell'array di puntatori  (slot totali)
-	//nota: size_t è un tipo senza segno
-}List;
+// //struct List
+// typedef struct{
+// 	void **puntatore;	//puntatore all'array di puntatori che puntano a oggetti di vario tipo
+// 	size_t numero_elementi_attuali;	//numero di elementi attuali (slot occupati)
+// 	size_t spazio_totale_allocato;		//numero di slot nell'array di puntatori  (slot totali)
+// 	//nota: size_t è un tipo senza segno
+// }List;
 
-List* list_create(void); //nessun parametro necessario
-void list_append(List* lista, void* el);
-void* list_get(List* list, size_t indice);
-void list_free(List* list);
+// List* list_create(void); //nessun parametro necessario
+// void list_append(List* lista, void* el);
+// void* list_get(List* list, size_t indice);
+// void list_free(List* list);
 
-typedef struct {
-	char* tipo;
-	char* nome; 	//nome della variabile
-	int riga_dichiarata; 	//riga in cui è stata dichiarata la variabile
-	bool usata; 	//flag, true se la variabile è stata usata	
-} Variabile;
+// typedef struct {
+// 	char* tipo;
+// 	char* nome; 	//nome della variabile
+// 	int riga_dichiarata; 	//riga in cui è stata dichiarata la variabile
+// 	bool usata; 	//flag, true se la variabile è stata usata	
+// } Variabile;
 
 
-typedef struct{
-	int variabili_controllate;
-	int errori_rilevati;
-	int variabili_inutilizzate;
-	int nomi_variabili_non_corretti;
-	int tipi_dato_scorretti;
-} Statistiche;
+// typedef struct{
+// 	int variabili_controllate;
+// 	int errori_rilevati;
+// 	int variabili_inutilizzate;
+// 	int nomi_variabili_non_corretti;
+// 	int tipi_dato_scorretti;
+// } Statistiche;
 
 int conta_var_inutilizzate(List *vars);
 void salva_statistiche_file_esterno(char *nome_file_output, Statistiche *stats, List *var_inutilizzate);

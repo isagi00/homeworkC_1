@@ -12,12 +12,10 @@ typedef struct {
 
 
 // // Caso 3: con tag opzionale
-typedef struct palle { int x; } Point;
+typedef struct tag { int x; } Point;
 
 // // Caso 4: multipli alias
 typedef struct { int v; } Vec, *VecPtr;
 
 typedef enum {gennaio, febbraio};
 
-typedef unsigned long long int  amam[];
-amam a[];

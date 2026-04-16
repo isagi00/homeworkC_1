@@ -5,6 +5,7 @@
 
 #include "ControlloVariabile.h"
 #include "supporto.h"
+// #include "strutturedati.h"
 
 int main(int argc, char *argv[]){
     //opzioni : 

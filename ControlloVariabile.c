@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "supporto.h"
+// #include "strutturedati.h" -> già in supporto.h
 
 
 // const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
@@ -191,6 +192,22 @@ bool controllaNome(char* parola){
 	free(copia);
 	return true;
 
+}
+
+bool controllaNomeAliasStruct(char* nome){
+	if (!nome || strlen(nome) == 0) return false;
+
+	char* copia = strdup(nome);
+	char* pulito = eliminaSpaziDxSx_v2 (copia);
+	//gestione puntatori:  'typedef struct { int v; } alias, *aliasptr;'
+	//elimina gli asterischi
+	char* start = pulito;
+	while (*start == '*' || *start == ' ' || *start == '\t'){
+		start++;
+	}
+	bool risultato = controllaNome(start);
+	free(copia);
+	return risultato;
 }
 
 /*
