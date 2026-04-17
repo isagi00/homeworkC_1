@@ -76,62 +76,6 @@ bool controlloTipo(char* parola, List* struct_definite){
     return false;
 }
 
-/*determina se la stringa è una dichiarazione di una funzione. 
-
-*/
-// bool isFunzione(char* parola){
-//     char* parole_da_split = strdup(parola); 
-    
-//     char* parole_splitate_tipo = strtok(parole_da_split, " ");
-//     char* parole_splitate_nome = NULL;  
-    
-//     if(parole_splitate_tipo != NULL){
-//         parole_splitate_nome = strtok(NULL, "");
-//     } else {
-//         free(parole_da_split);
-//         return false;
-//     }
-
-//     if(!controlloTipo(parole_splitate_tipo)){
-//         free(parole_da_split);
-//         return false;
-//     }
-    
-//     if(parole_splitate_nome != NULL){
-//         int i = strlen(parole_splitate_nome);
-//         bool esiste_aperta = false; 
-
-//         for(int j = 0; j < i - 1; j++){
-//             char c = parole_splitate_nome[j];
-//             if(j == 0 && (c == '*' || (c == '*' && parole_splitate_nome[1] == '*'))){
-//                 continue;  
-//             }
-//             if(c == '('){
-//                 if(!esiste_aperta){
-//                     esiste_aperta = true;
-//                 } else {
-//                     free(parole_da_split);
-//                     return false;  // doppia (
-//                 }
-//             } else if(!(isalnum(c) || c == '_')){
-//                 if(!esiste_aperta){
-//                     free(parole_da_split);
-//                     return false;  
-//                 }
-//             }
-//         }
-//         if(parole_splitate_nome[i - 1] != ')'){
-//             free(parole_da_split);
-//             return false;
-//         }
-//         free(parole_da_split);
-//         return true;
-//     }
-
-//     free(parole_da_split);
-//     return false;
-// }
-
 /*
 controlla se la stringa corrente è una keyword.
 -str: stringa
@@ -737,12 +681,16 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 	//printf("\n %s \n",parole_copia);
 
     char** parti_var=split_variabile(copia_str,&n_parti);	// "int", "a", "10"
+	// char** parti_var = split(copia_str, " \t=", &n_parti);
 	if (!parti_var)
 	{
 		free(copia_str);
 		return false;
 	}
 	bool risultato = false;
+	printf("str: %s \n", str);
+	stampaParoleSplit(parti_var, n_parti);
+	
 	
 	//caso: "int"
 	if(n_parti<=1){
@@ -750,9 +698,6 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 	}
 	//caso: int, a
 	else if(n_parti==2){
-		for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-		}
 		risultato = (controlloTipo(parti_var[0], struct_definite) && controllaNome(parti_var[1]));
 		if (risultato){
 			Variabile* var = malloc(sizeof(Variabile));
@@ -766,9 +711,6 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 	}
 	//caso: int, a , 10
 	else if(n_parti==3){	//"int i = 10"
-		for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-		}
 		if (controlloTipo(parti_var[0], struct_definite) && controllaNome(parti_var[1])){
 			if (controlloValoreAssegnato(parti_var[2], parti_var[0])){
 				risultato = true;
@@ -788,9 +730,6 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 		// long, long, a
 		else if(controllaLongShort_tre_sessione(parti_var))
     	{
-			for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-			}
 			risultato=true;
 			if (risultato){
 				char buffer_tipo[256] = {0};
@@ -810,10 +749,7 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 	//long, long ,a , 10;
 	//unsigned long long a;
 	else if(n_parti==4){	//"short int a=10" "long int a=10" "unsigned int a=10"  "unsigned short"
-		if(ricerca(str,"=")){
-			for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-			}
+		if(strchr(str,'=')){ //se ci sta uguale, var con assegnazione 'long long nome = 1'
 			//[long int a = 10]
 			risultato=(controllaLongShort_tre_sessione(parti_var));
 			if (risultato){
@@ -830,10 +766,7 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				list_append(var_dichiarate, var);
 			}
 		}
-		else{
-			for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-			}
+		else{ //var senza assegnazione 'unsigned long long nome;
 			//unsigned long long a;
 			risultato=controllaLongShort_quattro_sessione(parti_var);
 			if (risultato){
@@ -854,11 +787,7 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 		}
 	}
 	else if(n_parti == 5){	//"unsigned short int a = 10" "long long int a=10"
-		if(ricerca(str,"=")){
-			printf("5\n");
-			for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-			}
+		if(strchr(str,'=')){
 			risultato = controllaLongShort_quattro_sessione(parti_var); //unsigned long long a = 10
 			if (risultato){
 				char buffer_tipo[256] = {0};
@@ -877,11 +806,7 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				list_append(var_dichiarate, var);
 			}
 		}
-		else{
-			printf("5\n");
-			for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-			}
+		else{ //unsigned long long int a;
 			//unsigned long long int a;
 			risultato = controllaLongShort_cinque_sessione(parti_var);
 			if (risultato){
@@ -891,9 +816,11 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				strcat(buffer_tipo, parti_var[1]);
 				strcat(buffer_tipo, " ");
 				strcat(buffer_tipo, parti_var[2]);
+				strcat(buffer_tipo, " ");
+				strcat(buffer_tipo, parti_var[3]);
 
 				Variabile* var = malloc(sizeof(Variabile));
-				var->nome = strdup(parti_var[3]);
+				var->nome = strdup(parti_var[4]);
 				var->tipo = strdup(buffer_tipo);
 				var->riga_dichiarata = riga;
 				var->usata = false;	
@@ -901,12 +828,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 			}
 		}
 	}
-	else if(n_parti == 6){	//"unsigned long long int a = 10"
+	else if(n_parti == 6){	//"unsigned long long a = 10"
 		if(ricerca(str,"=")){
-			printf("6\n");
-			for (int i = 0; i<n_parti; i++){
-			printf("%i: '%s' \n", i, parti_var[i]);
-			}
 			risultato = controllaLongShort_cinque_sessione(parti_var);
 			if (risultato){
 				char buffer_tipo[256] = {0};

@@ -89,7 +89,7 @@ char* eliminaSpaziDxSx_v2(char* str){
 	return pulito;
 }
 
-//strtok hen nb bi genshin nb
+//strtok hen nb bu bi genshin nb
 char** split_variabile(char* str, int *numero) {
     if (!str || !numero) return NULL;
     
@@ -100,31 +100,34 @@ char** split_variabile(char* str, int *numero) {
     char* str_copy = strdup(str);  // copia per strtok (che modifica)
     if (!str_copy) { free(vettore); return NULL; }
 
-    // Prima parte: prima di "="
-    char* token = strtok(str_copy, "=");
-    if (token != NULL) {
-        char* t = strtok(token, " \t");
-        while (t != NULL && i < 63) {
-            
-            char* trimmed = eliminaSpaziDxSx_v2(t);
-            if (trimmed) {
-                vettore[i++] = trimmed;  // pointer indipendente (heap)
-            }
-            t = strtok(NULL, " \t");
-        }
-    }
+	char* eq = strchr(str_copy, '=');
+	char* parte_sinistra = NULL;
+	char* parte_destra = NULL;
 
-    // Seconda parte: dopo "="
-    token = strtok(NULL, "");
-    if (token != NULL && i < 63) {
-        char* trimmed = eliminaSpaziDxSx_v2(token);
-        if (trimmed) {
-            vettore[i++] = trimmed;
-        }
-    }
+	if (eq) {
+		*eq = '\0';               // taglia su '='
+		parte_sinistra = str_copy;
+		parte_destra = eq + 1;
+	} else {
+		parte_sinistra = str_copy;
+	}
 
-    free(str_copy);  // ✅ ora sicuro: vettore contiene copie indipendenti
+	// tokenizza sinistra
+	char* t = strtok(parte_sinistra, " \t");
+	while (t != NULL && i < 63) {
+		char* trimmed = eliminaSpaziDxSx_v2(t);
+		if (trimmed) vettore[i++] = trimmed;
+		t = strtok(NULL, " \t");
+	}
+
+	// valore a destra (se c'era '=')
+	if (parte_destra) {
+		char* trimmed = eliminaSpaziDxSx_v2(parte_destra);
+		if (trimmed && strlen(trimmed) > 0) vettore[i++] = trimmed;
+	}
+	free(str_copy);		
     *numero = i;
+
     return vettore;
 }
 

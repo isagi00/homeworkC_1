@@ -11,7 +11,12 @@ int main(int abc, char *hello[]){
 
     //triplo
     unsigned long long c; // 4
-    unsigned long long c2 = 20; // 5
+    unsigned long long c2=0; // 5
+
+    unsigned long long int d;
+    unsigned long long int d2=9;
+
+    extern const unsigned long long int e;
 
     return 0;
 }
