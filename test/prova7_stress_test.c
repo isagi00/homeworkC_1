@@ -2,7 +2,7 @@ int main() {
     int a = 5;          // variabile intera
     int b = -10;        // valore negativo
     float f = 0.5;      // float
-    bool attivo = true; // bool
+    _Bool attivo = 1; // bool
     char c = 'X';       // char
     int mai_usata = 42; // questa non viene mai usata
     char c2 = 67;

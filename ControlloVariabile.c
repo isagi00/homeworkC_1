@@ -4,20 +4,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "supporto.h"
-// #include "strutturedati.h" -> già in supporto.h
-char* qualificatori1[] = {"const", "volatile", "restrict", "_Atomic", NULL};
-
-char* storage1[] = {"auto", "static", "extern", "register", NULL};
-
-// const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
-const char* keywords[] = {
-    "auto", "break", "case", "char", "const", "continue", "default", "do",
-    "double", "else", "enum", "extern", "float", "for", "goto", "if",
-    "int", "long", "register", "return", "short", "signed", "sizeof", "static",
-    "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
-    NULL
-};
-
 
 /*stampa le stringhe dell'array dato. usato rigorosamente dopo il split. 
 - parole: array di stringhe. es : ["hello", "world"]
@@ -69,27 +55,6 @@ bool controlloTipo(char* parola, List* struct_definite){
 
 	printf("[controlloTipo] errore di tipo");
     return false;
-}
-
-/*
-controlla se la stringa corrente è una keyword.
--str: stringa
-ritorna true se è una keyword.
-*/
-bool is_keyword(char* str){
-	//check tipi
-	for (int i = 0; tipi_base[i] != NULL; i++){
-		if (strcmp(str,tipi_base[i]) == 0){
-			return true;
-		}
-	}
-	//check su altri keyword
-	for (int j = 0; keywords[j] != NULL; j++){
-		if(strcmp(str, keywords[j]) == 0){
-			return true;
-		}
-	}
-	return false;
 }
 
 
@@ -622,7 +587,12 @@ _Bool controllaLongShort_tre_sessione(char** parti_var) {
 		// casi con char
 		(strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "char") == 0 && controllaNome(parti_var[2])) ||
 		// "signed char a"
-    	(strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "char") == 0 && controllaNome(parti_var[2]))
+    	(strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "char") == 0 && controllaNome(parti_var[2])) ||
+
+		// casi con int
+		(strcmp(parti_var[0], "unsigned") == 0 && strcmp(parti_var[1], "int") == 0 && controllaNome(parti_var[2])) ||
+		// "signed char a"
+    	(strcmp(parti_var[0], "signed") == 0 && strcmp(parti_var[1], "int") == 0 && controllaNome(parti_var[2]))
 	);
 }
 
@@ -684,26 +654,26 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 	_Bool ha_qual=0;
 	char* qual = NULL;
 	//rileva keyword di storage e qualificatori
-	while ((!ha_storage && ricerca_array(parti_var[0], storage1)||(!ha_qual && ricerca_array(parti_var[0],qualificatori1))))
+	while ((!ha_storage && ricerca_array(parti_var[0], storage)||(!ha_qual && ricerca_array(parti_var[0],qualificatori))))
 	{	
 		// printf("loop\n");
-		if(!ha_storage && ricerca_array(parti_var[0],storage1)){
+		if(!ha_storage && ricerca_array(parti_var[0],storage)){
 			ha_storage=1;
 			stor = strdup(parti_var[0]);
 			parti_var++;
 			n_parti--;
-			printf("trovato storage\n");
+			// printf("trovato storage\n");
 		}
-		if(!ha_qual && ricerca_array(parti_var[0],qualificatori1)){
+		if(!ha_qual && ricerca_array(parti_var[0],qualificatori)){
 			ha_qual=1;
 			qual = strdup(parti_var[0]);
 			parti_var++;
 			n_parti--;
-			printf("trovato qual\n");
+			// printf("trovato qual\n");
 		}
 	}
 
-	printf("storage, qual: '%s', '%s'\n", stor, qual);
+	// printf("storage, qual: '%s', '%s'\n", stor, qual);
 
 	if (!parti_var)
 	{
@@ -711,8 +681,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 		return false;
 	}
 	bool risultato = false;
-	printf("str: %s \n", str);
-	stampaParoleSplit(parti_var, n_parti);
+	// printf("str: %s \n", str);
+	// stampaParoleSplit(parti_var, n_parti);
 
 	//check sui tipi base
 	//caso: "int"
@@ -745,9 +715,11 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 					var->tipo = strdup(parti_var[0]);
 					var->riga_dichiarata = riga;
 					var->usata = false;	
+					var->storage = ha_storage ? strdup(stor) : NULL;
+                	var->qual = ha_qual ? strdup(qual) : NULL;	
 					list_append(var_dichiarate, var);
 				}
-			}
+			}	
 			else{
 				printf("[controllaDichiarazioneVariabile] valore '%s' non valido per tipo '%s'\n", parti_var[2],parti_var[0]);
 			}
