@@ -42,6 +42,6 @@ bool isVariabileIntDichiarata(char* token, List* variabili);
 bool isAssegnazioneValida(char* str, List* variabili);
 
 void stampaStructDef(StructDef* sd) ;
-
+_Bool ricerca_array(char *str, char *arr[]);
 #endif
 //fine include guard

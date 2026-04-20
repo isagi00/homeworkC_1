@@ -5,7 +5,9 @@
 #include <ctype.h>
 #include "supporto.h"
 // #include "strutturedati.h" -> già in supporto.h
+char* qualificatori1[] = {"const", "volatile", "restrict", "_Atomic", NULL};
 
+char* storage1[] = {"auto", "static", "extern", "register", NULL};
 
 // const char* tipi_base[] = {"int", "float", "double", "char", "long", "bool", NULL};
 const char* keywords[] = {
@@ -15,6 +17,7 @@ const char* keywords[] = {
     "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while",
     NULL
 };
+
 
 /*stampa le stringhe dell'array dato. usato rigorosamente dopo il split. 
 - parole: array di stringhe. es : ["hello", "world"]
@@ -26,14 +29,6 @@ void stampaParoleSplit(char **parole, int numero_parole) {
         printf("[%d]: '%s'\n", i, parole[i]);
     }
 }
-
-
-
-
-
-
-
-
 
 /*
 data una parola, ritorna se la parola è equivalente a un tipo valido.
@@ -184,13 +179,14 @@ StructDef* parseTypedefStruct(char* buffer, int riga_inizio){
 	char* str = eliminaSpaziDxSx_v2(buffer);
 	if (!str) return NULL;
 	//check su 'typedef struct'
-	if (strncmp(str, "typedef", 7) != 0){
+	//todo : typedefy ritornerebbe true
+	if (strncmp(str, "typedef ", 8) != 0){
 		free(str);
 		return NULL;
 	}
 	char* dopo_typedef = str + 7;	//salta 'typedef'
 	while (*dopo_typedef == ' ' || *dopo_typedef == '\t') dopo_typedef++; //salta spazi
-	if (strncmp(dopo_typedef, "struct", 6) != 0){
+	if (strncmp(dopo_typedef, "struct ", 7) != 0){
 		free(str);
 		return NULL;
 	}
@@ -674,14 +670,41 @@ true per:
 */
 bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite, List* var_dichiarate){
 	if (!str) return false;
-
+	
 	//duplica e splitta 
 	int n_parti;
 	char* copia_str=strdup(str);	//"int a = 10"
 	//printf("\n %s \n",parole_copia);
 
     char** parti_var=split_variabile(copia_str,&n_parti);	// "int", "a", "10"
-	// char** parti_var = split(copia_str, " \t=", &n_parti);
+	char** parti_var_copia = parti_var;
+
+	_Bool ha_storage=0;
+	char* stor = NULL;
+	_Bool ha_qual=0;
+	char* qual = NULL;
+	//rileva keyword di storage e qualificatori
+	while ((!ha_storage && ricerca_array(parti_var[0], storage1)||(!ha_qual && ricerca_array(parti_var[0],qualificatori1))))
+	{	
+		// printf("loop\n");
+		if(!ha_storage && ricerca_array(parti_var[0],storage1)){
+			ha_storage=1;
+			stor = strdup(parti_var[0]);
+			parti_var++;
+			n_parti--;
+			printf("trovato storage\n");
+		}
+		if(!ha_qual && ricerca_array(parti_var[0],qualificatori1)){
+			ha_qual=1;
+			qual = strdup(parti_var[0]);
+			parti_var++;
+			n_parti--;
+			printf("trovato qual\n");
+		}
+	}
+
+	printf("storage, qual: '%s', '%s'\n", stor, qual);
+
 	if (!parti_var)
 	{
 		free(copia_str);
@@ -690,8 +713,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 	bool risultato = false;
 	printf("str: %s \n", str);
 	stampaParoleSplit(parti_var, n_parti);
-	
-	
+
+	//check sui tipi base
 	//caso: "int"
 	if(n_parti<=1){
 		risultato = false; 
@@ -705,6 +728,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 			var->tipo = strdup(parti_var[0]);
 			var->riga_dichiarata = riga;
 			var->usata = false;	
+			var->storage = ha_storage ? strdup(stor) : NULL;
+			var->qual = ha_qual ? strdup(qual) : NULL;
 			list_append(var_dichiarate, var);
 		}
 		
@@ -742,6 +767,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				var->tipo = strdup(buffer_tipo);
 				var->riga_dichiarata = riga;
 				var->usata = false;	
+				var->storage = ha_storage ? strdup(stor) : NULL;
+				var->qual = ha_qual ? strdup(qual) : NULL;
 				list_append(var_dichiarate, var);
 			}
 		}
@@ -763,6 +790,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				var->tipo = strdup(buffer_tipo);
 				var->riga_dichiarata = riga;
 				var->usata = false;	
+				var->storage = ha_storage ? strdup(stor) : NULL;
+				var->qual = ha_qual ? strdup(qual) : NULL;
 				list_append(var_dichiarate, var);
 			}
 		}
@@ -782,6 +811,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				var->tipo = strdup(buffer_tipo);
 				var->riga_dichiarata = riga;
 				var->usata = false;	
+				var->storage = ha_storage ? strdup(stor) : NULL;
+				var->qual = ha_qual ? strdup(qual) : NULL;
 				list_append(var_dichiarate, var);
 			}
 		}
@@ -803,6 +834,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				var->tipo = strdup(buffer_tipo);
 				var->riga_dichiarata = riga;
 				var->usata = false;	
+				var->storage = ha_storage ? strdup(stor) : NULL;
+				var->qual = ha_qual ? strdup(qual) : NULL;
 				list_append(var_dichiarate, var);
 			}
 		}
@@ -824,6 +857,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				var->tipo = strdup(buffer_tipo);
 				var->riga_dichiarata = riga;
 				var->usata = false;	
+				var->storage = ha_storage ? strdup(stor) : NULL;
+				var->qual = ha_qual ? strdup(qual) : NULL;
 				list_append(var_dichiarate, var);
 			}
 		}
@@ -846,6 +881,8 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 				var->tipo = strdup(buffer_tipo);
 				var->riga_dichiarata = riga;
 				var->usata = false;	
+				var->storage = ha_storage ? strdup(stor) : NULL;
+				var->qual = ha_qual ? strdup(qual) : NULL;
 				list_append(var_dichiarate, var);
 			}
 		}
@@ -854,7 +891,7 @@ bool controllaDichiarazioneVariabile(char* str, int riga, List* struct_definite,
 		}
 	}
 	
-    free(parti_var);
+    free(parti_var_copia);
     free(copia_str);
 	return risultato;
 }

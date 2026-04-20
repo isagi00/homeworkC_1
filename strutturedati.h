@@ -24,6 +24,8 @@ typedef struct {
 	char* nome; 	//nome della variabile
 	int riga_dichiarata; 	//riga in cui è stata dichiarata la variabile
 	bool usata; 	//flag, true se la variabile è stata usata	
+	char* storage;	//"auto", "static", "extern", "register"
+	char* qual;		////"const", "volatile", "restrict", "_Atomic"
 } Variabile;
 
 //statistiche

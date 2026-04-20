@@ -83,7 +83,8 @@ int main(int argc, char *argv[]){
     
     for (int i = 0; i < variabili_dichiarate->numero_elementi_attuali; i++){
         Variabile* var = list_get(variabili_dichiarate, i);
-        printf("[MAIN] var dichiarata: '%s' di tipo: '%s' alla riga %i\n", var->nome, var->tipo, var->riga_dichiarata);
+        printf("[MAIN] var dichiarata: '%s' di tipo: '%s' con storage: '%s' e qual: '%s' alla riga %i\n",
+                var->nome, var->tipo, var->storage, var->qual, var->riga_dichiarata);
     }
     
 

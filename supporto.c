@@ -691,3 +691,16 @@ void stampaStructDef(StructDef* sd) {
     }
     printf("]\n");
 }
+
+_Bool ricerca_array(char *str, char *arr[]){
+	if(!str||!arr){return 	0;}
+
+
+	for (int i = 0; arr[i] != NULL; i++){
+		if (strcmp(arr[i], str) == 0){
+			return 1;
+		}
+	}
+	return 0;
+	
+}
