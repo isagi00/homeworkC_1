@@ -166,7 +166,7 @@ bool controllaVar(char* parola, char* tipo){
 }
 
 int main(){
-    char* p1="maskja='a'";
+    char* p1="int under_score= 5;";
     char* p2="char";
 
     bool p=controllaVar(p1,p2);
@@ -177,6 +177,9 @@ int main(){
     }else{
         printf("non è main");
     }*/
-   bool n1=isFunzione(mp);
+   //bool n1=isFunzione(mp);
     printf("%d",p);
 }
+
+int i= 12 + 233212;
+
