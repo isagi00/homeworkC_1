@@ -13,8 +13,41 @@ const char* qualificatori[] = {"const", "volatile", "restrict", "_Atomic", NULL}
 
 const char* storage[] = {"auto", "static", "extern", "register", NULL};
 
-static const unsigned long long int a;
+const char* keywords[] = {
+        // tipi
+        "int","char","float","double","long","short","unsigned","signed","void",
+        // storage
+        "extern","static","auto","register",
+        // qualificatori
+        "const","volatile","restrict",
+        // controllo flusso
+        "if","else","while","for","do","return","break","continue",
+        "switch","case","default","goto",
+        // altri
+        "struct","union","enum","typedef","sizeof",
+        NULL
+    };
 
+/*
+controlla se la stringa corrente è una keyword.
+-str: stringa
+ritorna true se è una keyword.
+*/
+bool is_keyword(char* str){
+	//check tipi
+	for (int i = 0; tipi_base[i] != NULL; i++){
+		if (strcmp(str,tipi_base[i]) == 0){
+			return true;
+		}
+	}
+	//check su altri keyword
+	for (int j = 0; keywords[j] != NULL; j++){
+		if(strcmp(str, keywords[j]) == 0){
+			return true;
+		}
+	}
+	return false;
+}
 
 /*funzione splitta str in un array di token.
 str: stringa in input. es: ("hello world")
@@ -561,64 +594,129 @@ bool controllaReturnValido(char* str, List* variabili){
 	return false;
 }
 
-bool isAssegnazioneValida(char* str, List* variabili){
-	char* copia_str = strdup(str);
-	//controlla se il primo token è un tipo base
-	char* primo_token = NULL;
-	int n_token;
-	char** tokens = split(copia_str, " \t", &n_token);
-	if (n_token > 0) primo_token = strdup(tokens[0]);
-	free(tokens);
-	if (!primo_token) {	//guard
-		free(copia_str);
+// bool isAssegnazioneValida(char* str, List* variabili){
+// 	char* copia_str = strdup(str);
+// 	//controlla se il primo token è un tipo base
+// 	char* primo_token = NULL;
+// 	int n_token;
+// 	char** tokens = split(copia_str, " \t", &n_token);
+// 	if (n_token > 0) primo_token = strdup(tokens[0]);
+// 	free(tokens);
+// 	if (!primo_token) {	//guard
+// 		free(copia_str);
+// 		return false;
+// 	}
+
+// 	bool inizia_con_tipo = false;
+// 	for(int i = 0; tipi_base[i] != NULL; i++){
+// 		if (strcmp(primo_token, tipi_base[i]) == 0){
+// 			inizia_con_tipo = true;
+// 			return false;
+// 		}
+// 	}
+// 	free(primo_token);
+
+// 	//se non inizia con il tipo controlla se è un assegnamento valido
+// 	//quindi ad esempio: 'a = b + c'
+// 	if (!inizia_con_tipo){
+// 		//trova il nome della var assegnata
+// 		char* copia_str2 = strdup(str);
+// 		char* nome_candidato = NULL;
+// 		int n_token2;
+// 		char** tokens2 = split(copia_str2, " \t=", &n_token2);
+
+// 		if(n_token2 > 0) nome_candidato = strdup(tokens2[0]);
+// 		free(tokens2);
+// 		if(!nome_candidato){
+// 			free(copia_str2);
+// 			free(copia_str);
+// 			return false;
+// 		}
+
+// 		//check se candidato è già stato dichiarato
+// 		for(int j = 0; j < variabili->numero_elementi_attuali; j++){
+// 			Variabile* var = list_get(variabili, j);
+// 			if (strcmp(nome_candidato, var->nome) == 0){
+// 				free(copia_str2);
+// 				free(copia_str);
+// 				return true;
+// 			}
+// 		}
+// 		free(nome_candidato);
+// 	}
+// 	free(copia_str);
+// 	return false;
+// }
+
+
+bool isAssegnazioneValida(char* str, List* vars){
+	//controllo sulla riga, controlla che non inizi con una kw.
+	char* copia = strdup(str);
+	int n_parole;
+	char** parole = split(copia, " \t", &n_parole);
+
+	if (n_parole == 0 || !parole[0]){
+		free(copia); free(parole);
+		return false;
+	}
+	//controlla se il primo token è una kw
+	if (is_keyword(parole[0])){
+		free(copia); free(parole);
 		return false;
 	}
 
-	bool inizia_con_tipo = false;
-	for(int i = 0; tipi_base[i] != NULL; i++){
-		if (strcmp(primo_token, tipi_base[i]) == 0){
-			inizia_con_tipo = true;
-			return false;
-		}
+	//se primo token non kw, split su = per separare su left e right
+	char* copia2 = strdup(str);
+	int n_token;
+	char** tokens = split(copia2, "=", &n_token);
+	if (n_token < 2){
+		free(copia2); free(tokens);
+		return false;
 	}
-	free(primo_token);
 
-	//se non inizia con il tipo controlla se è un assegnamento valido
-	//quindi ad esempio: 'a = b + c'
-	if (!inizia_con_tipo){
-		//trova il nome della var assegnata
-		char* copia_str2 = strdup(str);
-		char* nome_candidato = NULL;
-		int n_token2;
-		char** tokens2 = split(copia_str2, " \t=", &n_token2);
+	char* lhs = strdup(tokens[0]);
+	char* rhs = strdup(tokens[1]);
 
-		if(n_token2 > 0) nome_candidato = strdup(tokens2[0]);
-		free(tokens2);
-		if(!nome_candidato){
-			free(copia_str2);
-			free(copia_str);
-			return false;
-		}
-
-		//check se candidato è già stato dichiarato
-		for(int j = 0; j < variabili->numero_elementi_attuali; j++){
-			Variabile* var = list_get(variabili, j);
-			if (strcmp(nome_candidato, var->nome) == 0){
-				free(copia_str2);
-				free(copia_str);
-				return true;
+	//lhs
+	bool lhs_valido = false;
+	int n_lhs;
+	char** left = split(lhs, " \t,", &n_lhs);
+	for (int l = 0; l < n_lhs; l++){
+		char* attuale = left[l];
+		for (int i = 0; i<vars->numero_elementi_attuali; i++){
+			Variabile* var = list_get(vars,i);
+			if (strcmp(attuale, var->nome) == 0 ){
+				var->usata = true;
+				lhs_valido = true;
 			}
 		}
-		free(nome_candidato);
 	}
-	free(copia_str);
-	return false;
+	free(left);
+
+    if (!lhs_valido){
+        free(copia2); free(tokens);
+        free(lhs); free(rhs);
+        free(copia); free(parole);
+        return false;
+    }
+
+	//rhs: marca le variabili che compaiono come usate
+	int n_rhs;
+	char** right = split(rhs, " \t,+-*/", &n_lhs);
+	for (int r = 0; r < n_lhs; r++){
+		char* attuale = right[r];
+		for (int i = 0; i<vars->numero_elementi_attuali; i++){
+			Variabile* var = list_get(vars,i);
+			if (strcmp(attuale, var->nome) == 0 ){
+				var->usata = true;
+			}
+		}
+	}
+	free(copia2); free(tokens);
+	free(lhs); free(rhs);
+	free(right);
+	return true;
 }
-
-
-// bool controllaSpecificheVar(char* dichiarazione){
-
-// }
 
 char* trovaTipoVar(char* dichiarazione){
 	int n_tokens;
@@ -692,7 +790,7 @@ void stampaStructDef(StructDef* sd) {
     printf("]\n");
 }
 
-_Bool ricerca_array(char *str, char *arr[]){
+_Bool ricerca_array(char *str, const char *arr[]){
 	if(!str||!arr){return 	0;}
 
 

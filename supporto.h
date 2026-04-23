@@ -11,8 +11,10 @@
 extern const char* tipi_base[];	//-> extern permette l'utilizzo di questi array in file .c esterni
 extern const char* qualificatori[];
 extern const char* storage[];
+extern const char* keywords[];
 
 //funzioni di supporto
+bool is_keyword(char* str);
 char** split(char* separaS,char* separatore, int *numeroP);
 char** split_variabile(char* str, int *numero);
 char* eliminaSpaziDxSx(char* str);
@@ -40,8 +42,9 @@ bool isInteroValido(char* token);
 bool isVariabileIntDichiarata(char* token, List* variabili);
 
 bool isAssegnazioneValida(char* str, List* variabili);
+bool isAssegnazioneValida(char* str, List* vars);
 
 void stampaStructDef(StructDef* sd) ;
-_Bool ricerca_array(char *str, char *arr[]);
+_Bool ricerca_array(char *str, const char *arr[]);
 #endif
 //fine include guard
