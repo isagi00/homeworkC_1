@@ -61,3 +61,67 @@ _bool a=TRUE/True/true/FALSE/False/fasle
     // se hai usato typedef
     typedef struct { int x; int y; } Punto;
     Punto a;  // ok, direttamente -> quindi 'Punto' sarà un tipo di variabile valido
+
+
+cazzo
+
+bool isBaseType(char* t){
+    return (
+        strcmp(t, "int") == 0 ||
+        strcmp(t, "char") == 0 ||
+        strcmp(t, "float") == 0 ||
+        strcmp(t, "double") == 0 ||
+        strcmp(t, "bool") == 0
+    );
+}
+
+
+bool isSpecifier(char* t){
+    return (
+        strcmp(t, "unsigned") == 0 ||
+        strcmp(t, "signed") == 0 ||
+        strcmp(t, "short") == 0 ||
+        strcmp(t, "long") == 0
+    );
+}
+
+
+
+bool validaTipoGenerico(char** tokens, int n){
+    int base_count = 0;
+    int long_count = 0;
+    int short_count = 0;
+    int sign_count = 0;
+
+    for (int i = 0; i < n; i++){
+        if (isBaseType(tokens[i])){
+            base_count++;
+        }
+        else if (strcmp(tokens[i], "long") == 0){
+            long_count++;
+        }
+        else if (strcmp(tokens[i], "short") == 0){
+            short_count++;
+        }
+        else if (strcmp(tokens[i], "unsigned") == 0 || strcmp(tokens[i], "signed") == 0){
+            sign_count++;
+        }
+        else{
+            return false; // token sconosciuto
+        }
+    }
+
+    // ---- regole ----
+
+    if (base_count > 1) return false;
+    if (short_count > 1) return false;
+    if (long_count > 2) return false;
+    if (sign_count > 1) return false;
+
+    // incompatibilità
+    if (short_count && long_count) return false;
+
+    // se non c'è base type → default int (C lo permette)
+    // es: "unsigned long"
+    return true;
+}

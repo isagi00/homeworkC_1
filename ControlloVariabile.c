@@ -51,8 +51,30 @@ bool controlloTipo(char* parola, List* struct_definite){
 			}
 		}
 	}
+	printf("[controlloTipo] errore di tipo");
+    return false;
+}
 
-
+/*
+controlla solamente i tipi base.
+*/
+bool controlloTipiBase(char* parola){
+	//caso: 'char'
+	if(strcmp(parola,"char")==0){
+		return true;
+	}
+	//casi: 'int' 'long' 'short
+	else if(strcmp(parola,"int")==0 || strcmp(parola,"long")==0 || strcmp(parola,"short")==0){
+        return true;
+    }
+	//casi: 'float', 'double'
+	else if(strcmp(parola,"float")==0 || strcmp(parola,"double")==0){
+        return true;
+    }
+	//caso: 'bool'
+	else if(strcmp(parola,"bool")==0){
+        return true;
+    }
 	printf("[controlloTipo] errore di tipo");
     return false;
 }
@@ -119,14 +141,32 @@ bool controllaNomeAliasStruct(char* nome){
 
 	char* copia = strdup(nome);
 	char* pulito = eliminaSpaziDxSx_v2 (copia);
-	//gestione puntatori:  'typedef struct { int v; } alias, *aliasptr;'
-	//elimina gli asterischi
-	char* start = pulito;
-	while (*start == '*' || *start == ' ' || *start == '\t'){
-		start++;
+
+	char alias[128] = {0};	//buffer per copiare alias
+	//copia nel buffer il nome dell'alias, saltando spazi. 
+	//se l'alias è un array viene trocata la parte dell'array.
+	for (int ptr = 0; ptr < strlen(pulito); ptr++){
+		if (pulito[ptr] == '['){	//alias[1024] termina su '['
+			break;
+		}
+
+		if (isalnum(pulito[ptr]) || pulito[ptr] == '_'){
+			alias[ptr] = pulito[ptr];
+		}
+		else{
+			alias[ptr] = ' ';
+		}
 	}
-	bool risultato = controllaNome(start);
+	char* alias_pulito = eliminaSpaziDxSx_v2(alias);
+	alias_pulito[strlen(alias_pulito)] = '\0';
+	bool risultato = controllaNome(alias_pulito);
 	free(copia);
+	if(risultato){
+		printf("controllaNomeAliasStruct: nome valido: '%s' -> alias: '%s'\n", pulito, alias_pulito);
+	}
+	else{
+		printf("controllaNomeAliasStruct: nome non valido: '%s' -> alias: '%s'\n", pulito, alias_pulito);
+	}
 	return risultato;
 }
 
@@ -919,6 +959,146 @@ bool isMain(char* riga) {
 	return ok_args;
 }
 
+/*
+controlla se il tipo del typedef è valido: 
+es: typedef [tipo] [alias1, alias2, alias3 ...]
+ritorna true.
+*/
+bool controllaTipoENomeTypedef(char* str, int n_riga){
+    if (!str) return false;
+
+    char* copia = strdup(str);
+    if (!copia) return false;
+
+	//1. tipo + alias principale
+	//typedef tipo alias1,' alias2
+    int n_parti;
+    char** parti = split(copia, ",;", &n_parti);
+    if (n_parti == 0){
+        free(copia);
+        return false;
+    }
+
+    int n_tokens;
+    char** tokens = split(parti[0], " \t", &n_tokens);	
+    if (n_tokens < 2){
+        free(copia);
+        free(tokens);
+        return false;
+    }
+    // ultimo token = alias
+    char* alias_principale = tokens[n_tokens - 1];
+
+    if (!controllaNomeAliasStruct(alias_principale)){
+        free(copia);
+        free(tokens);
+        return false;
+    }
+
+	bool tipo_valido = false;
+
+    if (n_tokens == 2){ //int alias
+        tipo_valido = controlloTipiBase(tokens[0]) && controllaNomeAliasStruct(tokens[1]);
+    }
+    else if (n_tokens == 3){	//long long alias
+        tipo_valido = controllaLongShort_tre_sessione(tokens);
+    }
+    else if (n_tokens == 4){	//unsigned long long alias
+        tipo_valido = controllaLongShort_quattro_sessione(tokens);
+    }
+    else if (n_tokens == 5){	//unsigned long long int alias
+        tipo_valido = controllaLongShort_cinque_sessione(tokens);
+    }
+
+    if (!tipo_valido){
+        free(copia);
+        free(tokens);
+        return false;
+    }
+
+    //2. altri alias
+	//typedef tipo alias1, 'alias2'
+    for (int i = 1; i < n_parti; i++){
+        char* alias = eliminaSpaziDxSx_v2(parti[i]);
+        if (!controllaNomeAliasStruct(alias)){
+            free(copia); free(tokens);
+            return false;
+        }
+    }
+
+    free(copia); free(tokens);
+    return true;
+}
+
+/*
+parsing per 'typedef [tipo] [alias]' singola linea, senza struct
+ritorna una StructDef*
+*/
+StructDef* parseTypeDef(char* clean, int n_riga){
+	//verifica che il primo token sia 'typedef' e non 'typedefsss'
+	int n_token;
+	char** tokens = split(clean, " \t;", &n_token);
+	if (n_token == 0 || !tokens){
+		free(tokens);
+		return NULL;
+	}
+	if (strcmp(tokens[0], "typedef") != 0){
+		printf("[parseTypeDef] dichiarazione typedef non corretto alla riga: %i", n_riga);
+		return NULL;
+	}
+
+	//ricostruisci tutto dopo "typedef"
+	char buffer[1024] = {0};
+	for (int i = 1; i < n_token; i++){
+		strcat(buffer, tokens[i]);
+		strcat(buffer, " ");
+	}
+	if (!controllaTipoENomeTypedef(buffer, n_riga)){
+		printf("[parseTypeDef] typedef invalido alla riga: %i", n_riga);
+		return NULL;
+	}
+
+	//split sugli alias
+	//'typedef tipo alias1, alias2, alias3 ...
+	int n_parti;
+	char** parti = split(buffer, ",;", &n_parti);
+	if (n_parti == 0) return NULL;
+	//'typedef tipo alias1 | alias2| alias3
+	StructDef* sd = struct_create();
+	sd->alias = malloc(sizeof(char*) * n_parti);
+	sd->numero_alias = 0;
+	sd->riga_dichiarata = n_riga;
+
+	for (int i = 0; i < n_parti; i++){
+		char* p = eliminaSpaziDxSx_v2(parti[i]);
+
+		char* alias = NULL;
+		//'typedef tipo alias1| alias2| alias3 
+		if (i == 0){
+			// primo contiene 'tipo alias1' -> prendi ultimo token
+			int n_tok;
+			char** tok = split(p, " \t", &n_tok);
+			char* alias_principale = tok[n_tok-1];
+			if (n_tok > 0){
+				alias = strdup(tok[n_tok-1]);
+			}
+		}
+		//altri alias
+		else{
+			alias = strdup(p);
+		}
+		if (alias && controllaNomeAliasStruct(alias)){
+			sd->alias[sd->numero_alias++] = alias;
+		}
+	}
+
+	printf("[parseTypeDef] typedef valido (%d alias) riga %d\n",
+		   sd->numero_alias, n_riga);
+
+	return sd;
+}
+
+
 
 /*
 controlla se la dichiarazione di if/else/while/for sia corretta
@@ -1060,7 +1240,24 @@ List* check_file(char* filename, Statistiche* stats){
 			continue;
 		}
 
-		// //rileva inizio struct
+		//rileva typedef [tipo] [nome];
+		if (strncmp(clean, "typedef", 7) == 0){
+			StructDef* sd = parseTypeDef(clean, n_riga);
+			if (sd){
+				list_append(struct_definite, sd);
+				printf("[checkfile]typedef valido alla riga %i\n", n_riga);
+				n_riga++;
+				continue;
+			} 
+			else {
+				printf("[checkfile] typedef non valido alla riga %i\n ", n_riga);
+				stats->errori_rilevati++;
+				n_riga++;
+				continue;
+			}
+
+		}
+		//rileva inizio typedef struct
 		if (!in_struct && check_typedef_struct(clean)){
 			printf("[checkfile]inizio 'typedef struct' alla riga %i \n", n_riga);
 			//caso in cui il typedef struct avviene su unica riga, quindi ci sta '}'

@@ -21,6 +21,10 @@ bool controlloArgomentiMain(char* args);
 bool controlloNome(char* parola);
 char*  controlloVariabile(char* filename,Statistiche *stats);
 
+bool controllaTipoENomeTypedef(char* str, int n_riga);
+StructDef* parseTypeDef(char* clean,int n_riga);
+
+
 bool controllaStrutturaControllo(char* token, int riga, Statistiche* stats);
 List* check_file(char* filename, Statistiche* stats/*, List* variabili*/);
 
